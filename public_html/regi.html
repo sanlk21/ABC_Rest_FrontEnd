@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/css/login.css">
+</head>
+<body>
+    <div class="wrapper">
+        <form id="userForm">
+            <h2>Register</h2>
+            <div class="input-field">
+                <input type="text" id="username" required>
+                <label>Enter your username</label>
+            </div>
+            <div class="input-field">
+                <input type="password" id="password" required>
+                <label>Enter your password</label>
+            </div>
+            <div class="input-field">
+                <input type="email" id="email" required>
+                <label>Enter your email</label>
+            </div>
+            <div class="input-field">
+                <input type="text" id="address" required>
+                <label>Enter your address</label>
+            </div>
+            <div class="input-field">
+                <select id="role" required>
+                    <option value="CUSTOMER">Customer</option>
+                    <option value="ADMIN">admin</option>
+
+                </select>
+                <label>Select your role</label>
+            </div>
+            <button type="button" id="submitBtn">Submit</button>
+            <div class="register">
+                <p>You want to login? <a href="login.html">Login page</a></p>
+            </div>
+        </form>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="assets/js/form.js"></script>
+</body>
+</html>

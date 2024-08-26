@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/css/login.css">
+</head>
+
+<body>
+    <div class="wrapper">
+        <form id="loginForm">
+            <h2>Login</h2>
+            <div class="input-field">
+                <input type="email" id="email" required>
+                <label for="email">Enter your email</label>
+            </div>
+            <div class="input-field">
+                <input type="password" id="password" required>
+                <label for="password">Enter your password</label>
+            </div>
+            <div class="forget">
+                <label for="remember">
+                    <input type="checkbox" id="remember">
+                    <p>Remember me</p>
+                </label>
+                <a href="#">Forgot password?</a>
+            </div>
+            <button type="button" id="loginBtn">Log In</button>
+            <div class="register">
+                <p>Don't have an account? <a href="regi.html">Register</a></p>
+            </div>
+        </form>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="assets/js/form.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#loginBtn').click(function (e) {
+                e.preventDefault(); // Prevent the form from submitting the traditional way
+
+                var user = {
+                    email: $('#email').val(),
+                    password: $('#password').val()
+                };
+
+                $.ajax({
+                    type: "POST",
+                    url: "http://localhost:8080/api/v1/User/login",
+                    contentType: "application/json",
+                    data: JSON.stringify(user),
+                    success: function (response) {
+                        alert("Login successful!");
+
+                        // Redirect based on user role
+                        if (response.role === "ADMIN") {
+                            window.location.href = "/public_html/admin.html";
+                        } else if (response.role === "STAFF") {
+                            window.location.href = "/public_html/staff.html";
+                        } else if (response.role === "CUSTOMER") {
+                            window.location.href = "/public_html/index.html";
+                        } else {
+                            alert("Unknown role: " + response.role);
+                        }
+                    },
+                    error: function (error) {
+                        alert("Error logging in: " + error.responseText);
+                        console.log(error);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

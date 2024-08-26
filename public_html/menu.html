@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABC Restaurant Menu</title>
+    <link rel="stylesheet" href="assets/css/menu.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div>
+                <a href="index.html">Home</a>
+                <a href="menu.html">Menu</a>
+                <a href="#contact">Contact</a>
+            </div>
+            <div>
+                <a href="cart.html"><i class="fas fa-shopping-cart"></i> Cart</a>
+                <a href="#account"><i class="fas fa-user"></i> Account</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>ABC Restaurant Menu</h1>
+
+        <div class="search-container">
+            <input type="text" placeholder="Search menu items..." id="searchInput">
+            <button onclick="searchItems()"><i class="fas fa-search"></i></button>
+        </div>
+
+        <div class="category-filter" id="categoryFilter">
+            <!-- Category buttons will be dynamically added here -->
+        </div>
+
+        <button id="showAllItems">Show All Items</button>
+
+        <div class="menu-container" id="menuContainer">
+            <!-- Menu items will be dynamically added here -->
+        </div>
+
+        <div id="cartContainer">
+            <!-- Cart items will be dynamically added here -->
+        </div>
+
+        <div id="loadingIndicator">Loading...</div>
+        <div id="errorMessage" class="error-message"></div>
+    </div>
+
+    <script>
+        let menuItems = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        const currentUserEmail = 'user@example.com'; // Replace with actual user authentication
+
+        function showLoading() {
+            $('#loadingIndicator').show();
+        }
+
+        function hideLoading() {
+            $('#loadingIndicator').hide();
+        }
+
+        function showError(message) {
+            $('#errorMessage').text(message).show();
+        }
+
+        function hideError() {
+            $('#errorMessage').hide();
+        }
+
+        function fetchItems() {
+            showLoading();
+            hideError();
+            $.ajax({
+                url: 'http://localhost:8080/api/v1/items/getItems',
+                method: 'GET',
+                success: function(response) {
+                    menuItems = response;
+                    createCategoryButtons();
+                    createMenuItems();
+                    hideLoading();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching items:', error);
+                    hideLoading();
+                    showError('Failed to load menu items. Please try again later.');
+                }
+            });
+        }
+
+        function createCategoryButtons() {
+            const categoryFilter = document.getElementById('categoryFilter');
+            const categories = ['All', ...new Set(menuItems.map(item => item.category.name))];
+            categoryFilter.innerHTML = categories.map(category => 
+                `<button class="category-btn ${category === 'All' ? 'active' : ''}" data-category="${category}">${category}</button>`
+            ).join('');
+        }
+
+        function createMenuItems(category = 'All', searchTerm = '') {
+            const menuContainer = document.getElementById('menuContainer');
+            menuContainer.innerHTML = '';
+            let filteredItems = category === 'All' ? menuItems : menuItems.filter(item => item.category.name === category);
+            
+            if (searchTerm) {
+                filteredItems = filteredItems.filter(item =>
+                    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    item.description.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageItems = filteredItems.slice(startIndex, endIndex);
+
+            pageItems.forEach(item => {
+                const menuItem = document.createElement('div');
+                menuItem.className = 'menu-item';
+                menuItem.innerHTML = `
+                    <img src="${item.imagePath}" alt="${item.name}" class="item-image">
+                    <div class="item-info">
+                        <h3 class="item-name">${item.name}</h3>
+                        <p class="item-description">${item.description}</p>
+                        <p class="item-price">Rs. ${item.price.toFixed(2)}</p>
+                        <div class="cart-buttons">
+                            <button class="add-to-cart" data-id="${item.id}">Add to Cart</button>
+                            <button class="remove-from-cart" data-id="${item.id}">Remove</button>
+                        </div>
+                    </div>
+                `;
+                menuContainer.appendChild(menuItem);
+            });
+
+            // Add pagination
+            const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+            const paginationContainer = document.createElement('div');
+            paginationContainer.className = 'pagination';
+            paginationContainer.innerHTML = `
+                <button onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>
+                <span>Page ${currentPage} of ${totalPages}</span>
+                <button onclick="changePage(1)" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>
+            `;
+            menuContainer.appendChild(paginationContainer);
+        }
+
+        function changePage(direction) {
+            currentPage += direction;
+            createMenuItems(document.querySelector('.category-btn.active').dataset.category, document.getElementById('searchInput').value);
+        }
+
+        function searchItems() {
+            const searchTerm = document.getElementById('searchInput').value;
+            currentPage = 1;
+            createMenuItems('All', searchTerm);
+        }
+
+        function addToCart(itemId, quantity) {
+            showLoading();
+            hideError();
+            $.ajax({
+                url: '/api/cart/add',
+                method: 'POST',
+                data: {
+                    userEmail: currentUserEmail,
+                    itemId: itemId,
+                    quantity: quantity
+                },
+                success: function(response) {
+                    console.log('Item added to cart');
+                    updateCartDisplay(response);
+                    hideLoading();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error adding item to cart:', error);
+                    hideLoading();
+                    showError('Failed to add item to cart. Please try again.');
+                }
+            });
+        }
+
+        function removeFromCart(cartItemId) {
+            showLoading();
+            hideError();
+            $.ajax({
+                url: '/api/cart/remove',
+                method: 'DELETE',
+                data: {
+                    userEmail: currentUserEmail,
+                    cartItemId: cartItemId
+                },
+                success: function(response) {
+                    console.log('Item removed from cart');
+                    updateCartDisplay(response);
+                    hideLoading();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error removing item from cart:', error);
+                    hideLoading();
+                    showError('Failed to remove item from cart. Please try again.');
+                }
+            });
+        }
+
+        function updateCartDisplay(cart) {
+            const cartContainer = document.getElementById('cartContainer');
+            cartContainer.innerHTML = '<h2>Your Cart</h2>';
+
+            if (cart.cartItems.length === 0) {
+                cartContainer.innerHTML += '<p>Your cart is empty.</p>';
+                return;
+            }
+
+            cart.cartItems.forEach(item => {
+                const cartItem = document.createElement('div');
+                cartItem.className = 'cart-item';
+                cartItem.innerHTML = `
+                    <span>${item.item.name}</span>
+                    <span>Quantity: ${item.quantity}</span>
+                    <span>Price: Rs. ${item.price.toFixed(2)}</span>
+                    <button onclick="removeFromCart(${item.id})">Remove</button>
+                `;
+                cartContainer.appendChild(cartItem);
+            });
+
+            const totalPrice = document.createElement('div');
+            totalPrice.className = 'cart-total';
+            totalPrice.textContent = `Total: Rs. ${cart.totalPrice.toFixed(2)}`;
+            cartContainer.appendChild(totalPrice);
+
+            const checkoutButton = document.createElement('button');
+            checkoutButton.textContent = 'Proceed to Checkout';
+            checkoutButton.onclick = proceedToCheckout;
+            cartContainer.appendChild(checkoutButton);
+        }
+
+        function proceedToCheckout() {
+            // Implement checkout process
+            alert('Checkout process not implemented yet.');
+        }
+
+        function fetchCart() {
+            showLoading();
+            hideError();
+            $.ajax({
+                url: '/api/cart/view',
+                method: 'GET',
+                data: {
+                    userEmail: currentUserEmail
+                },
+                success: function(response) {
+                    updateCartDisplay(response);
+                    hideLoading();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching cart:', error);
+                    hideLoading();
+                    showError('Failed to load cart. Please try again.');
+                }
+            });
+        }
+
+        function initializeEventListeners() {
+            document.getElementById('categoryFilter').addEventListener('click', function (e) {
+                if (e.target.classList.contains('category-btn')) {
+                    document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentPage = 1;
+                    createMenuItems(e.target.dataset.category, document.getElementById('searchInput').value);
+                }
+            });
+
+            document.getElementById('menuContainer').addEventListener('click', function (e) {
+                if (e.target.classList.contains('add-to-cart')) {
+                    const itemId = e.target.dataset.id;
+                    addToCart(itemId, 1);
+                } else if (e.target.classList.contains('remove-from-cart')) {
+                    const itemId = e.target.dataset.id;
+                    removeFromCart(itemId);
+                }
+            });
+
+            document.getElementById('searchInput').addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    searchItems();
+                }
+            });
+
+            document.getElementById('showAllItems').addEventListener('click', function() {
+                currentPage = 1;
+                createMenuItems('All');
+            });
+        }
+
+        // Initialize the page
+        $(document).ready(function() {
+            fetchItems();
+            fetchCart();
+            initializeEventListeners();
+        });
+    </script>
+</body>
+</html>

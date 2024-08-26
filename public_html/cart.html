@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Cart</title>
+    <link rel="stylesheet" href="assets/css/cart.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body class="dark-theme">
+    <nav class="top-nav">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="menu.html">Menu</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <h1>Your Cart</h1>
+        <div class="cart-controls">
+            <label for="items-shown">Items shown:</label>
+            <input type="number" id="items-shown" min="1" max="25" value="10">
+        </div>
+        <table id="cart-items">
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Price (LKR)</th>
+                    <th>Quantity</th>
+                    <th>Total (LKR)</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div class="cart-summary">
+            <p>Selected Items: <span id="selected-items">0</span></p>
+            <p>Selected Amount: LKR <span id="selected-amount">0.00</span></p>
+            <p>Total Items: <span id="total-items">0</span></p>
+            <p>Total Amount: LKR <span id="total-amount">0.00</span></p>
+            <a href="/public_html/payment.html">
+                <button id="purchase-btn">Purchase Selected Items</button>
+            </a>
+        </div>
+    </main>
+
+    <script src="assets/js/cart.js"></script>
+</body>
+
+</html>
