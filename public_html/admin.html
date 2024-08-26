@@ -423,88 +423,86 @@
         }
 
         function submitForm() {
-            const form = document.getElementById('modalForm');
-            const formData = new FormData(form);
+    const form = document.getElementById('modalForm');
+    const formData = new FormData(form);
 
-            let url, method;
+    let url, method;
 
-            if (currentSection === 'users') {
-                url = currentAction === 'add' ? 'http://localhost:8080/api/v1/User/saveUser' : 'http://localhost:8080/api/v1/User/updateUser';
-                method = currentAction === 'add' ? 'POST' : 'PUT';
+    if (currentSection === 'users') {
+        url = currentAction === 'add' ? 'http://localhost:8080/api/v1/User/saveUser' : 'http://localhost:8080/api/v1/User/updateUser';
+        method = currentAction === 'add' ? 'POST' : 'PUT';
 
-                const jsonData = {};
-                formData.forEach((value, key) => {
-                    if (key === 'password' && value) {
-                        jsonData[key] = CryptoJS.AES.encrypt(value, 'secret_key').toString();
-                    } else {
-                        jsonData[key] = value;
-                    }
-                });
+        const jsonData = {};
+        formData.forEach((value, key) => {
+            // Directly assign the value, including the password, without any encryption
+            jsonData[key] = value;
+        });
 
-                $.ajax({
-                    url: url,
-                    method: method,
-                    contentType: 'application/json',
-                    data: JSON.stringify(jsonData),
-                    success: function (data) {
-                        console.log('Success:', data);
-                        alert('User saved successfully.');
-                        closeModal();
-                        fetchData();
-                    },
-                    error: function (error) {
-                        console.error('Error submitting form:', error);
-                        alert(`Failed to save user. Please try again.`);
-                    }
-                });
-            } else if (currentSection === 'items') {
-                url = currentAction === 'add' ? 'http://localhost:8080/api/v1/items/saveItem' : `http://localhost:8080/api/v1/items/updateItem/${formData.get('id')}`;
-                method = currentAction === 'add' ? 'POST' : 'PUT';
-
-                $.ajax({
-                    url: url,
-                    method: method,
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function (data) {
-                        console.log('Success:', data);
-                        alert('Item saved successfully.');
-                        closeModal();
-                        fetchData();
-                    },
-                    error: function (error) {
-                        console.error('Error submitting form:', error);
-                        alert(`Failed to save item. Please try again.`);
-                    }
-                });
-            } else if (currentSection === 'categories') {
-                url = currentAction === 'add' ? 'http://localhost:8080/api/v1/categories/saveCategory' : `http://localhost:8080/api/v1/categories/updateCategory/${formData.get('id')}`;
-                method = currentAction === 'add' ? 'POST' : 'PUT';
-
-                const jsonData = {};
-                formData.forEach((value, key) => {
-                    jsonData[key] = value;
-                });
-
-                $.ajax({
-                    url: url,
-                    method: method,
-                    contentType: 'application/json',
-                    data: JSON.stringify(jsonData),
-                    success: function (data) {
-                        console.log('Success:', data);
-                        alert('Category saved successfully.');
-                        closeModal();
-                        fetchData();
-                    },
-                    error: function (error) {
-                        console.error('Error submitting form:', error);
-                        alert(`Failed to save category. Please try again.`);
-                    }
-                });
+        $.ajax({
+            url: url,
+            method: method,
+            contentType: 'application/json',
+            data: JSON.stringify(jsonData),
+            success: function (data) {
+                console.log('Success:', data);
+                alert('User saved successfully.');
+                closeModal();
+                fetchData();
+            },
+            error: function (error) {
+                console.error('Error submitting form:', error);
+                alert(`Failed to save user. Please try again.`);
             }
-        }
+        });
+    } else if (currentSection === 'items') {
+        url = currentAction === 'add' ? 'http://localhost:8080/api/v1/items/saveItem' : `http://localhost:8080/api/v1/items/updateItem/${formData.get('id')}`;
+        method = currentAction === 'add' ? 'POST' : 'PUT';
+
+        $.ajax({
+            url: url,
+            method: method,
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+                console.log('Success:', data);
+                alert('Item saved successfully.');
+                closeModal();
+                fetchData();
+            },
+            error: function (error) {
+                console.error('Error submitting form:', error);
+                alert(`Failed to save item. Please try again.`);
+            }
+        });
+    } else if (currentSection === 'categories') {
+        url = currentAction === 'add' ? 'http://localhost:8080/api/v1/categories/saveCategory' : `http://localhost:8080/api/v1/categories/updateCategory/${formData.get('id')}`;
+        method = currentAction === 'add' ? 'POST' : 'PUT';
+
+        const jsonData = {};
+        formData.forEach((value, key) => {
+            jsonData[key] = value;
+        });
+
+        $.ajax({
+            url: url,
+            method: method,
+            contentType: 'application/json',
+            data: JSON.stringify(jsonData),
+            success: function (data) {
+                console.log('Success:', data);
+                alert('Category saved successfully.');
+                closeModal();
+                fetchData();
+            },
+            error: function (error) {
+                console.error('Error submitting form:', error);
+                alert(`Failed to save category. Please try again.`);
+            }
+        });
+    }
+}
+
 
         function searchItems(type) {
             const searchTerm = $(`#${type}SearchInput`).val().toLowerCase();
