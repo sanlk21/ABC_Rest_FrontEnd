@@ -9,6 +9,265 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #45a049;
+            --text-color: #e0e0e0;
+            --bg-color: #121212;
+            --card-bg-color: #1e1e1e;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: url('/public_html/assets/imgs/main.jpg'), rgba(0, 0, 0, 0.5);
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            z-index: -1;
+        }
+
+        .navbar {
+            background-color: var(--card-bg-color);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .navbar a {
+            color: var(--text-color);
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: 600;
+        }
+
+        .search-container {
+            display: flex;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+
+        .search-container input {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px 0 0 5px;
+        }
+
+        .search-container button {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text-color);
+        }
+
+        .category-filter {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .category-btn.active {
+            background-color: var(--secondary-color);
+        }
+
+        .menu-slider {
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+
+        .menu-slide {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-gap: 20px;
+            transition: transform 0.5s ease;
+        }
+
+        .slider-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 24px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .slider-arrow.left {
+            left: 10px;
+        }
+
+        .slider-arrow.right {
+            right: 10px;
+        }
+
+        .menu-item {
+            background-color: var(--card-bg-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            width: 300px;
+            height: 450px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .item-image {
+            width: 250px;
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .item-info {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .item-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0 0 5px 0;
+        }
+
+        .item-description {
+            font-size: 12px;
+            color: #bbb;
+            margin-bottom: 5px;
+        }
+
+        .item-price {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .cart-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .add-to-cart,
+        .remove-from-cart {
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        .add-to-cart {
+            background-color: var(--primary-color);
+        }
+
+        .add-to-cart:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .remove-from-cart {
+            background-color: #f44336;
+        }
+
+        .remove-from-cart:hover {
+            background-color: #d32f2f;
+        }
+
+        #cartContainer {
+            background-color: var(--card-bg-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .cart-total {
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        #loadingIndicator {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 
 <body>
@@ -80,13 +339,13 @@
             $.ajax({
                 url: 'http://localhost:8080/api/v1/items/getItems',
                 method: 'GET',
-                success: function(response) {
+                success: function (response) {
                     menuItems = response;
                     createCategoryButtons();
                     createMenuItems();
                     hideLoading();
                 },
-                error: function(xhr, status, error) {
+                error: function (xhr, status, error) {
                     console.error('Error fetching items:', error);
                     hideLoading();
                     showError('Failed to load menu items. Please try again later.');
@@ -97,7 +356,7 @@
         function createCategoryButtons() {
             const categoryFilter = document.getElementById('categoryFilter');
             const categories = ['All', ...new Set(menuItems.map(item => item.category.name))];
-            categoryFilter.innerHTML = categories.map(category => 
+            categoryFilter.innerHTML = categories.map(category =>
                 `<button class="category-btn ${category === 'All' ? 'active' : ''}" data-category="${category}">${category}</button>`
             ).join('');
         }
@@ -106,7 +365,7 @@
             const menuContainer = document.getElementById('menuContainer');
             menuContainer.innerHTML = '';
             let filteredItems = category === 'All' ? menuItems : menuItems.filter(item => item.category.name === category);
-            
+
             if (searchTerm) {
                 filteredItems = filteredItems.filter(item =>
                     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -122,7 +381,7 @@
                 const menuItem = document.createElement('div');
                 menuItem.className = 'menu-item';
                 menuItem.innerHTML = `
-                    <img src="${item.imagePath}" alt="${item.name}" class="item-image">
+                    <img src="http://localhost:8080/api/uploads/${item.imagePath.split('/').pop()}" alt="${item.name}" class="item-image">
                     <div class="item-info">
                         <h3 class="item-name">${item.name}</h3>
                         <p class="item-description">${item.description}</p>
@@ -163,19 +422,20 @@
             showLoading();
             hideError();
             $.ajax({
-                url: '/api/cart/add',
+                url: 'http://localhost:8080/api/cart/add',
                 method: 'POST',
-                data: {
+                data: JSON.stringify({
                     userEmail: currentUserEmail,
                     itemId: itemId,
                     quantity: quantity
-                },
-                success: function(response) {
+                }),
+                contentType: 'application/json',
+                success: function (response) {
                     console.log('Item added to cart');
                     updateCartDisplay(response);
                     hideLoading();
                 },
-                error: function(xhr, status, error) {
+                error: function (xhr, status, error) {
                     console.error('Error adding item to cart:', error);
                     hideLoading();
                     showError('Failed to add item to cart. Please try again.');
@@ -187,18 +447,18 @@
             showLoading();
             hideError();
             $.ajax({
-                url: '/api/cart/remove',
+                url: `http://localhost:8080/api/cart/remove/${cartItemId}`,
                 method: 'DELETE',
-                data: {
-                    userEmail: currentUserEmail,
-                    cartItemId: cartItemId
-                },
-                success: function(response) {
+                data: JSON.stringify({
+                    userEmail: currentUserEmail
+                }),
+                contentType: 'application/json',
+                success: function (response) {
                     console.log('Item removed from cart');
                     updateCartDisplay(response);
                     hideLoading();
                 },
-                error: function(xhr, status, error) {
+                error: function (xhr, status, error) {
                     console.error('Error removing item from cart:', error);
                     hideLoading();
                     showError('Failed to remove item from cart. Please try again.');
@@ -247,16 +507,13 @@
             showLoading();
             hideError();
             $.ajax({
-                url: '/api/cart/view',
+                url: `http://localhost:8080/api/cart/view?userEmail=${currentUserEmail}`,
                 method: 'GET',
-                data: {
-                    userEmail: currentUserEmail
-                },
-                success: function(response) {
+                success: function (response) {
                     updateCartDisplay(response);
                     hideLoading();
                 },
-                error: function(xhr, status, error) {
+                error: function (xhr, status, error) {
                     console.error('Error fetching cart:', error);
                     hideLoading();
                     showError('Failed to load cart. Please try again.');
@@ -284,24 +541,26 @@
                 }
             });
 
-            document.getElementById('searchInput').addEventListener('keyup', function(e) {
+            document.getElementById('searchInput').addEventListener('keyup', function (e) {
                 if (e.key === 'Enter') {
                     searchItems();
                 }
             });
 
-            document.getElementById('showAllItems').addEventListener('click', function() {
                 currentPage = 1;
+                document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelector('.category-btn[data-category="All"]').classList.add('active');
                 createMenuItems('All');
             });
         }
 
         // Initialize the page
-        $(document).ready(function() {
+        $(document).ready(function () {
             fetchItems();
             fetchCart();
             initializeEventListeners();
         });
     </script>
 </body>
+
 </html>
