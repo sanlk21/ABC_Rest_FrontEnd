@@ -1,7 +1,5 @@
-// cart.js
-
 let cart = [];
-const itemsPerPage = 10;
+let itemsPerPage = 10;
 let currentPage = 1;
 
 // Function to fetch cart items from the server
@@ -10,11 +8,11 @@ function fetchCartItems() {
         url: 'http://localhost:8080/api/cart/view',
         method: 'GET',
         data: { userEmail: 'user@example.com' }, // Replace with actual user email
-        success: function(response) {
+        success: function (response) {
             cart = response.cartItems || [];
             updateCartDisplay();
         },
-        error: function(xhr, status, error) {
+        error: function (xhr, status, error) {
             console.error('Error fetching cart:', error);
             alert('Failed to load cart. Please try again.');
         }
@@ -25,6 +23,11 @@ function fetchCartItems() {
 function updateCartDisplay() {
     const tbody = $('#cart-items tbody');
     tbody.empty();
+
+    if (cart.length === 0) {
+        tbody.append('<tr><td colspan="7">Your cart is empty.</td></tr>');
+        return;
+    }
 
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
@@ -48,6 +51,7 @@ function updateCartDisplay() {
     });
 
     updateSummary();
+    updatePagination();
 }
 
 // Function to update the cart summary
@@ -79,15 +83,16 @@ function removeItem(itemId) {
     $.ajax({
         url: 'http://localhost:8080/api/cart/remove',
         method: 'DELETE',
-        data: {
+        data: JSON.stringify({
             userEmail: 'user@example.com', // Replace with actual user email
             cartItemId: itemId
-        },
-        success: function(response) {
+        }),
+        contentType: 'application/json',
+        success: function (response) {
             cart = response.cartItems || [];
             updateCartDisplay();
         },
-        error: function(xhr, status, error) {
+        error: function (xhr, status, error) {
             console.error('Error removing item from cart:', error);
             alert('Failed to remove item from cart. Please try again.');
         }
@@ -99,27 +104,52 @@ function updateItemQuantity(itemId, quantity) {
     $.ajax({
         url: 'http://localhost:8080/api/cart/update',
         method: 'PUT',
-        data: {
+        data: JSON.stringify({
             userEmail: 'user@example.com', // Replace with actual user email
             cartItemId: itemId,
             quantity: quantity
-        },
-        success: function(response) {
+        }),
+        contentType: 'application/json',
+        success: function (response) {
             cart = response.cartItems || [];
             updateCartDisplay();
         },
-        error: function(xhr, status, error) {
+        error: function (xhr, status, error) {
             console.error('Error updating item quantity:', error);
             alert('Failed to update item quantity. Please try again.');
         }
     });
 }
 
+// Function to update pagination
+function updatePagination() {
+    const totalPages = Math.ceil(cart.length / itemsPerPage);
+    const pagination = $('#pagination');
+    pagination.empty();
+
+    if (totalPages > 1) {
+        const prevDisabled = currentPage === 1 ? 'disabled' : '';
+        const nextDisabled = currentPage === totalPages ? 'disabled' : '';
+
+        pagination.append(`
+            <button onclick="changePage(-1)" ${prevDisabled}>Previous</button>
+            <span>Page ${currentPage} of ${totalPages}</span>
+            <button onclick="changePage(1)" ${nextDisabled}>Next</button>
+        `);
+    }
+}
+
+// Function to handle page change
+function changePage(direction) {
+    currentPage += direction;
+    updateCartDisplay();
+}
+
 // Event listeners
-$(document).ready(function() {
+$(document).ready(function () {
     fetchCartItems();
 
-    $('#items-shown').on('change', function() {
+    $('#items-shown').on('change', function () {
         itemsPerPage = parseInt($(this).val());
         currentPage = 1;
         updateCartDisplay();
@@ -127,19 +157,19 @@ $(document).ready(function() {
 
     $(document).on('change', '.item-select', updateSummary);
 
-    $(document).on('change', '.item-quantity', function() {
+    $(document).on('change', '.item-quantity', function () {
         const itemId = $(this).data('id');
         const quantity = parseInt($(this).val());
         updateItemQuantity(itemId, quantity);
     });
 
-    $(document).on('click', '.remove-item', function() {
+    $(document).on('click', '.remove-item', function () {
         const itemId = $(this).data('id');
         removeItem(itemId);
     });
 
-    $('#purchase-btn').on('click', function() {
-        const selectedItemIds = $('.item-select:checked').map(function() {
+    $('#purchase-btn').on('click', function () {
+        const selectedItemIds = $('.item-select:checked').map(function () {
             return $(this).data('id');
         }).get();
 
