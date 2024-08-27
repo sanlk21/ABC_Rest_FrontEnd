@@ -1,169 +1,155 @@
+// cart.js
+
+let cart = [];
+const itemsPerPage = 10;
+let currentPage = 1;
+
+// Function to fetch cart items from the server
+function fetchCartItems() {
+    $.ajax({
+        url: 'http://localhost:8080/api/cart/view',
+        method: 'GET',
+        data: { userEmail: 'user@example.com' }, // Replace with actual user email
+        success: function(response) {
+            cart = response.cartItems || [];
+            updateCartDisplay();
+        },
+        error: function(xhr, status, error) {
+            console.error('Error fetching cart:', error);
+            alert('Failed to load cart. Please try again.');
+        }
+    });
+}
+
+// Function to update the cart display
+function updateCartDisplay() {
+    const tbody = $('#cart-items tbody');
+    tbody.empty();
+
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const pageItems = cart.slice(startIndex, endIndex);
+
+    pageItems.forEach(item => {
+        const row = `
+            <tr>
+                <td><input type="checkbox" class="item-select" data-id="${item.id}"></td>
+                <td><img src="${item.item.imagePath}" alt="${item.item.name}" class="item-image"></td>
+                <td>${item.item.name}</td>
+                <td>${item.item.price.toFixed(2)}</td>
+                <td>
+                    <input type="number" class="item-quantity" value="${item.quantity}" min="1" data-id="${item.id}">
+                </td>
+                <td>${(item.item.price * item.quantity).toFixed(2)}</td>
+                <td><button class="remove-item" data-id="${item.id}">Remove</button></td>
+            </tr>
+        `;
+        tbody.append(row);
+    });
+
+    updateSummary();
+}
+
+// Function to update the cart summary
+function updateSummary() {
+    const selectedItems = $('.item-select:checked').length;
+    let selectedAmount = 0;
+    let totalItems = 0;
+    let totalAmount = 0;
+
+    cart.forEach(item => {
+        const quantity = parseInt($(`input.item-quantity[data-id="${item.id}"]`).val());
+        const itemTotal = item.item.price * quantity;
+        totalItems += quantity;
+        totalAmount += itemTotal;
+
+        if ($(`input.item-select[data-id="${item.id}"]`).is(':checked')) {
+            selectedAmount += itemTotal;
+        }
+    });
+
+    $('#selected-items').text(selectedItems);
+    $('#selected-amount').text(selectedAmount.toFixed(2));
+    $('#total-items').text(totalItems);
+    $('#total-amount').text(totalAmount.toFixed(2));
+}
+
+// Function to remove an item from the cart
+function removeItem(itemId) {
+    $.ajax({
+        url: 'http://localhost:8080/api/cart/remove',
+        method: 'DELETE',
+        data: {
+            userEmail: 'user@example.com', // Replace with actual user email
+            cartItemId: itemId
+        },
+        success: function(response) {
+            cart = response.cartItems || [];
+            updateCartDisplay();
+        },
+        error: function(xhr, status, error) {
+            console.error('Error removing item from cart:', error);
+            alert('Failed to remove item from cart. Please try again.');
+        }
+    });
+}
+
+// Function to update item quantity
+function updateItemQuantity(itemId, quantity) {
+    $.ajax({
+        url: 'http://localhost:8080/api/cart/update',
+        method: 'PUT',
+        data: {
+            userEmail: 'user@example.com', // Replace with actual user email
+            cartItemId: itemId,
+            quantity: quantity
+        },
+        success: function(response) {
+            cart = response.cartItems || [];
+            updateCartDisplay();
+        },
+        error: function(xhr, status, error) {
+            console.error('Error updating item quantity:', error);
+            alert('Failed to update item quantity. Please try again.');
+        }
+    });
+}
+
+// Event listeners
 $(document).ready(function() {
-    let cartItems = [];
+    fetchCartItems();
 
-    function fetchCartItems() {
-        $.ajax({
-            url: '/api/cart',
-            method: 'GET',
-            success: function(data) {
-                cartItems = data;
-                updateCart();
-            },
-            error: function(xhr, status, error) {
-                console.error('Error fetching cart items:', error);
-            }
-        });
-    }
-
-    function updateCart() {
-        const itemsShown = parseInt($('#items-shown').val());
-        const $cartItems = $('#cart-items tbody');
-        $cartItems.empty();
-
-        cartItems.slice(0, itemsShown).forEach(item => {
-            const $row = $(`
-                <tr data-id="${item.id}">
-                    <td><input type="checkbox" class="item-select" ${item.selected ? 'checked' : ''}></td>
-                    <td><img src="${item.image}" alt="${item.name}"></td>
-                    <td>${item.name}</td>
-                    <td>${item.price.toLocaleString('en-LK', { style: 'currency', currency: 'LKR' })}</td>
-                    <td>
-                        <div class="quantity-control">
-                            <button class="quantity-btn decrease">-</button>
-                            <input type="number" class="quantity-input" value="${item.quantity}" min="1">
-                            <button class="quantity-btn increase">+</button>
-                        </div>
-                    </td>
-                    <td>${(item.price * item.quantity).toLocaleString('en-LK', { style: 'currency', currency: 'LKR' })}</td>
-                    <td><button class="remove-btn">Remove</button></td>
-                </tr>
-            `);
-            $cartItems.append($row);
-        });
-
-        updateSummary();
-    }
-
-    function updateSummary() {
-        const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-        const totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        
-        const selectedItems = cartItems.filter(item => item.selected).reduce((sum, item) => sum + item.quantity, 0);
-        const selectedAmount = cartItems.filter(item => item.selected).reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        
-        $('#total-items').text(totalItems);
-        $('#total-amount').text(totalAmount.toLocaleString('en-LK', { style: 'currency', currency: 'LKR' }));
-        $('#selected-items').text(selectedItems);
-        $('#selected-amount').text(selectedAmount.toLocaleString('en-LK', { style: 'currency', currency: 'LKR' }));
-    }
-
-    $(document).on('click', '.item-select', function() {
-        const itemId = $(this).closest('tr').data('id');
-        const item = cartItems.find(item => item.id === itemId);
-        if (item) {
-            item.selected = $(this).is(':checked');
-            updateSummary();
-        }
+    $('#items-shown').on('change', function() {
+        itemsPerPage = parseInt($(this).val());
+        currentPage = 1;
+        updateCartDisplay();
     });
 
-    $(document).on('click', '.remove-btn', function() {
-        const itemId = $(this).closest('tr').data('id');
-        $.ajax({
-            url: `/api/cart/${itemId}`,
-            method: 'DELETE',
-            success: function() {
-                cartItems = cartItems.filter(item => item.id !== itemId);
-                updateCart();
-            },
-            error: function(xhr, status, error) {
-                console.error('Error removing item from cart:', error);
-            }
-        });
-    });
+    $(document).on('change', '.item-select', updateSummary);
 
-    $(document).on('click', '.quantity-btn', function() {
-        const $row = $(this).closest('tr');
-        const itemId = $row.data('id');
-        const $input = $row.find('.quantity-input');
-        let quantity = parseInt($input.val());
-
-        if ($(this).hasClass('increase')) {
-            quantity++;
-        } else if ($(this).hasClass('decrease') && quantity > 1) {
-            quantity--;
-        }
-
-        $input.val(quantity);
-        updateItemQuantity(itemId, quantity);
-    });
-
-    $(document).on('change', '.quantity-input', function() {
-        const $row = $(this).closest('tr');
-        const itemId = $row.data('id');
+    $(document).on('change', '.item-quantity', function() {
+        const itemId = $(this).data('id');
         const quantity = parseInt($(this).val());
         updateItemQuantity(itemId, quantity);
     });
 
-    function updateItemQuantity(itemId, quantity) {
-        $.ajax({
-            url: `/api/cart/${itemId}`,
-            method: 'PUT',
-            data: JSON.stringify({ quantity: quantity }),
-            contentType: 'application/json',
-            success: function() {
-                const item = cartItems.find(item => item.id === itemId);
-                if (item) {
-                    item.quantity = quantity;
-                    updateCart();
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('Error updating item quantity:', error);
-            }
-        });
-    }
+    $(document).on('click', '.remove-item', function() {
+        const itemId = $(this).data('id');
+        removeItem(itemId);
+    });
 
-    $('#purchase-btn').click(function() {
-        const selectedItems = cartItems.filter(item => item.selected);
-        if (selectedItems.length === 0) {
-            alert('Please select items to purchase.');
+    $('#purchase-btn').on('click', function() {
+        const selectedItemIds = $('.item-select:checked').map(function() {
+            return $(this).data('id');
+        }).get();
+
+        if (selectedItemIds.length === 0) {
+            alert('Please select at least one item to purchase.');
             return;
         }
 
-        // In cart.js, replace the $('#purchase-btn').click function with:
-
-$('#purchase-btn').click(function() {
-    const selectedItems = cartItems.filter(item => item.selected);
-    if (selectedItems.length === 0) {
-        alert('Please select items to purchase.');
-        return;
-    }
-
-    // Store selected items in localStorage
-    localStorage.setItem('selectedItems', JSON.stringify(selectedItems));
-    
-    // Redirect to payment page
-    window.location.href = 'payment.html';
-});
-
-        $.ajax({
-            url: '/api/purchase',
-            method: 'POST',
-            data: JSON.stringify(selectedItems),
-            contentType: 'application/json',
-            success: function(response) {
-                alert('Purchase successful!');
-                cartItems = cartItems.filter(item => !item.selected);
-                updateCart();
-            },
-            error: function(xhr, status, error) {
-                console.error('Error processing purchase:', error);
-                alert('Error processing purchase. Please try again.');
-            }
-        });
+        // Implement purchase logic here
+        console.log('Purchasing items:', selectedItemIds);
+        // You can redirect to a payment page or process the purchase as needed
     });
-
-    $('#items-shown').change(updateCart);
-
-    fetchCartItems();
 });
