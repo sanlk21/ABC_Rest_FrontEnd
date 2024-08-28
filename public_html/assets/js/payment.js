@@ -47,7 +47,6 @@ $(document).ready(function() {
     });
 });
 
-// Display the order summary
 function displayOrderSummary() {
     const orderItems = $('#orderItems');
     orderItems.empty();
@@ -68,7 +67,6 @@ function displayOrderSummary() {
     $('#orderTotal').text(`Total: Rs. ${total.toFixed(2)}`);
 }
 
-// Validate the form inputs
 function validateForm() {
     const requiredFields = ['customerName', 'customerEmail', 'customerPhone', 'customerAddress'];
     let isValid = true;
@@ -88,13 +86,6 @@ function validateForm() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
         alert('Please enter a valid email address.');
-        return false;
-    }
-
-    const phone = $('#customerPhone').val().trim();
-    const phoneRegex = /^\d{10}$/;
-    if (!phoneRegex.test(phone)) {
-        alert('Please enter a valid 10-digit phone number.');
         return false;
     }
 
@@ -134,8 +125,10 @@ function validateForm() {
     return true;
 }
 
-// Create the order and send to the backend
 function createOrder() {
+    // Disable the order button and show loading state
+    $('#confirmOrder').prop('disabled', true).text('Processing...');
+
     const orderData = {
         userEmail: $('#customerEmail').val().trim(),
         orderDetails: cartItems.map(item => ({
@@ -151,23 +144,27 @@ function createOrder() {
         type: $('#orderType').val()
     };
 
+    console.log('Sending order data:', orderData);
+
     $.ajax({
         url: 'http://localhost:8080/api/v1/orders/saveOrder',
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(orderData),
         success: function(response) {
-            console.log('Order created:', response);
+            console.log('Order created successfully:', response);
             createPayment(response.id);
         },
         error: function(xhr, status, error) {
             console.error('Error creating order:', error);
-            alert('There was an error creating your order. Please try again.');
+            console.error('Server response:', xhr.responseText);
+            showOrderConfirmation(false, 'There was an error creating your order. Please try again.');
+            // Re-enable the order button
+            $('#confirmOrder').prop('disabled', false).text('Place Order');
         }
     });
 }
 
-// Create the payment and send to the backend
 function createPayment(orderId) {
     const paymentData = {
         paymentMethod: $('input[name="paymentMethod"]:checked').val(),
@@ -178,34 +175,53 @@ function createPayment(orderId) {
         paymentDate: new Date().toISOString()
     };
 
+    console.log('Sending payment data:', paymentData);
+
     $.ajax({
         url: 'http://localhost:8080/api/v1/payments/create',
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(paymentData),
         success: function(response) {
-            console.log('Payment created:', response);
-            showConfirmation();  // Show confirmation modal after payment is successful
+            console.log('Payment created successfully:', response);
+            showOrderConfirmation(true, 'Your order has been successfully placed!');
             clearCart();
         },
         error: function(xhr, status, error) {
             console.error('Error creating payment:', error);
-            alert('There was an error processing your payment. Please try again.');
+            console.error('Server response:', xhr.responseText);
+            showOrderConfirmation(false, 'There was an error processing your payment. Please try again.');
+        },
+        complete: function() {
+            // Re-enable the order button
+            $('#confirmOrder').prop('disabled', false).text('Place Order');
         }
     });
 }
 
-// Show the order confirmation modal
-function showConfirmation() {
-    $('#orderConfirmation').removeClass('hidden');
+function showOrderConfirmation(isSuccess, message) {
+    const modal = $('#orderConfirmation');
+    const modalTitle = modal.find('.modal-content h2');
+    const modalMessage = modal.find('.modal-content p');
+
+    if (isSuccess) {
+        modalTitle.text('Order Successful');
+        modalTitle.css('color', 'green');
+    } else {
+        modalTitle.text('Order Failed');
+        modalTitle.css('color', 'red');
+    }
+
+    modalMessage.text(message);
+    modal.removeClass('hidden');
+    console.log('Order confirmation modal displayed:', isSuccess ? 'Success' : 'Failure');
 }
 
-// Clear the cart after successful order and payment
 function clearCart() {
     localStorage.removeItem('cart');
+    cartItems = [];
 }
 
-// Utility function to get URL parameters
 function getUrlParameter(name) {
     name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
     var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
