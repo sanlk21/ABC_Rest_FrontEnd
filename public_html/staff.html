@@ -501,6 +501,9 @@
         // Fetch active orders when the page loads
         document.addEventListener('DOMContentLoaded', fetchActiveOrders);
 
+        // Periodically fetch active orders every 10 seconds
+        setInterval(fetchActiveOrders, 10000);
+
         // Close modal on outside click
         window.onclick = function(event) {
             const modal = document.getElementById('orderModal');

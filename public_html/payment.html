@@ -75,19 +75,20 @@
         </div>
 
         <button id="confirmOrder" class="confirm-btn">Place Order</button>
+
+        <!-- Confirmation Modal -->
+        <div id="orderConfirmation" class="modal hidden">
+            <div class="modal-content">
+                <h2>Order Confirmed!</h2>
+                <p>Thank you for your order. Your order details have been sent to your email.</p>
+                <button id="closeModal" class="confirm-btn">Close</button>
+            </div>
+        </div>
     </main>
 
     <footer>
         <p>&copy; 2024 ABC Restaurant. All rights reserved.</p>
     </footer>
-
-    <div id="orderConfirmation" class="modal hidden">
-        <div class="modal-content">
-            <h2>Order Confirmed!</h2>
-            <p>Thank you for your order. Your order details have been sent to your email.</p>
-            <button id="closeModal" class="confirm-btn">Close</button>
-        </div>
-    </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="assets/js/payment.js"></script>

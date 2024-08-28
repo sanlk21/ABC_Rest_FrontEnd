@@ -2,27 +2,17 @@ let order = {};
 let cartItems = [];
 
 $(document).ready(function() {
-    // Function to get URL parameters
-    function getUrlParameter(name) {
-        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-        var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-        var results = regex.exec(location.search);
-        return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-    }
-
-    // Try to get cart data from URL parameter first
+    // Get cart data from URL parameter or localStorage
     const cartData = getUrlParameter('cart');
     
     if (cartData) {
         try {
-            const parsedCart = JSON.parse(decodeURIComponent(cartData));
-            cartItems = parsedCart.cartItems;
+            cartItems = JSON.parse(decodeURIComponent(cartData)).cartItems;
         } catch (error) {
             console.error('Error parsing cart data from URL:', error);
         }
     }
 
-    // If cart is still empty, try to get it from localStorage
     if (cartItems.length === 0) {
         cartItems = JSON.parse(localStorage.getItem('cart')) || [];
     }
@@ -34,7 +24,7 @@ $(document).ready(function() {
         window.location.href = 'menu.html';
     }
 
-    // Payment method selection
+    // Show or hide card details based on selected payment method
     $('input[name="paymentMethod"]').change(function() {
         if ($(this).val() === 'CREDIT_CARD' || $(this).val() === 'DEBIT_CARD') {
             $('#cardDetails').show();
@@ -43,23 +33,21 @@ $(document).ready(function() {
         }
     });
 
-    // Place order
+    // Handle order confirmation
     $('#confirmOrder').click(function() {
         if (validateForm()) {
             createOrder();
         }
     });
 
-    // Close modal and redirect
+    // Handle modal close
     $('#closeModal').click(function() {
         $('#orderConfirmation').addClass('hidden');
         window.location.href = 'index.html'; // Redirect to home page
     });
-
-    // Initially hide the modal
-    $('#orderConfirmation').addClass('hidden');
 });
 
+// Display the order summary
 function displayOrderSummary() {
     const orderItems = $('#orderItems');
     orderItems.empty();
@@ -80,6 +68,7 @@ function displayOrderSummary() {
     $('#orderTotal').text(`Total: Rs. ${total.toFixed(2)}`);
 }
 
+// Validate the form inputs
 function validateForm() {
     const requiredFields = ['customerName', 'customerEmail', 'customerPhone', 'customerAddress'];
     let isValid = true;
@@ -145,18 +134,17 @@ function validateForm() {
     return true;
 }
 
+// Create the order and send to the backend
 function createOrder() {
     const orderData = {
-        user: {
-            email: $('#customerEmail').val().trim()
-        },
+        userEmail: $('#customerEmail').val().trim(),
         orderDetails: cartItems.map(item => ({
-            item: { id: item.id || item.item.id },
+            itemId: item.id || item.item.id,
             quantity: item.quantity,
             price: item.price
         })),
         startDate: new Date().toISOString(),
-        endDate: new Date().toISOString(), // You might want to adjust this for future orders
+        endDate: new Date().toISOString(),
         orderDate: new Date().toISOString(),
         totalAmount: cartItems.reduce((total, item) => total + (item.price * item.quantity), 0),
         status: "PENDING",
@@ -179,17 +167,14 @@ function createOrder() {
     });
 }
 
+// Create the payment and send to the backend
 function createPayment(orderId) {
     const paymentData = {
         paymentMethod: $('input[name="paymentMethod"]:checked').val(),
         status: "PENDING",
         amount: cartItems.reduce((total, item) => total + (item.price * item.quantity), 0),
-        user: {
-            email: $('#customerEmail').val().trim()
-        },
-        order: {
-            id: orderId
-        },
+        userEmail: $('#customerEmail').val().trim(),
+        orderId: orderId,
         paymentDate: new Date().toISOString()
     };
 
@@ -200,7 +185,7 @@ function createPayment(orderId) {
         data: JSON.stringify(paymentData),
         success: function(response) {
             console.log('Payment created:', response);
-            showConfirmation();
+            showConfirmation();  // Show confirmation modal after payment is successful
             clearCart();
         },
         error: function(xhr, status, error) {
@@ -210,10 +195,20 @@ function createPayment(orderId) {
     });
 }
 
+// Show the order confirmation modal
 function showConfirmation() {
     $('#orderConfirmation').removeClass('hidden');
 }
 
+// Clear the cart after successful order and payment
 function clearCart() {
     localStorage.removeItem('cart');
+}
+
+// Utility function to get URL parameters
+function getUrlParameter(name) {
+    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+    var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+    var results = regex.exec(location.search);
+    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
 }

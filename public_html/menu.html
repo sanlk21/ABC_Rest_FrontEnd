@@ -236,17 +236,17 @@
         }
 
         function proceedToCheckout() {
-    if (cart.cartItems.length === 0) {
-        alert('Your cart is empty. Add some items before checking out.');
-        return;
-    }
-    
-    // Encode cart data to pass to payment.html
-    const cartData = encodeURIComponent(JSON.stringify(cart));
-    
-    // Redirect to payment.html with cart data
-    window.location.href = `payment.html?cart=${cartData}`;
-}
+            if (cart.cartItems.length === 0) {
+                alert('Your cart is empty. Add some items before checking out.');
+                return;
+            }
+
+            // Encode cart data to pass to payment.html
+            const cartData = encodeURIComponent(JSON.stringify(cart));
+
+            // Redirect to payment.html with cart data
+            window.location.href = `payment.html?cart=${cartData}`;
+        }
 
         $(document).ready(function () {
             fetchItems();
