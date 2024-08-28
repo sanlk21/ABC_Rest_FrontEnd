@@ -35,20 +35,133 @@
                     <th>Action</th>
                 </tr>
             </thead>
-            <tbody></tbody>
+            <tbody>
+                <!-- Cart items will be populated here via JavaScript -->
+            </tbody>
         </table>
         <div class="cart-summary">
             <p>Selected Items: <span id="selected-items">0</span></p>
             <p>Selected Amount: LKR <span id="selected-amount">0.00</span></p>
             <p>Total Items: <span id="total-items">0</span></p>
             <p>Total Amount: LKR <span id="total-amount">0.00</span></p>
-            <a href="/public_html/payment.html">
-                <button id="purchase-btn">Purchase Selected Items</button>
-            </a>
+            <button id="purchase-btn">Purchase Selected Items</button>
         </div>
     </main>
 
     <script src="assets/js/cart.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Initialize cart display and summary
+            updateCartDisplay();
+
+            // Redirect to payment page on purchase
+            $('#purchase-btn').on('click', function () {
+                if (validateCart()) {
+                    window.location.href = 'payment.html';  // Adjust path as needed
+                } else {
+                    alert('Please select at least one item to proceed to payment.');
+                }
+            });
+
+            // Handle item selection and quantity changes
+            $(document).on('change', '.item-select', function () {
+                updateCartSummary();
+            });
+
+            $(document).on('input', '.item-quantity', function () {
+                const itemId = $(this).data('id');
+                const newQuantity = parseInt($(this).val(), 10);
+                updateCartItemQuantity(itemId, newQuantity);
+            });
+        });
+
+        function validateCart() {
+            // Check if any items are selected
+            const selectedItemsCount = parseInt($('#selected-items').text(), 10);
+            return selectedItemsCount > 0;
+        }
+
+        function updateCartDisplay() {
+            // Mock data for demonstration purposes
+            const cartItems = [
+                {
+                    id: 1,
+                    image: 'item1.jpg',
+                    name: 'Pizza Margherita',
+                    price: 1200.00,
+                    quantity: 2,
+                    selected: true
+                },
+                {
+                    id: 2,
+                    image: 'item2.jpg',
+                    name: 'Pasta Carbonara',
+                    price: 900.00,
+                    quantity: 1,
+                    selected: false
+                }
+            ];
+
+            const $cartItemsTableBody = $('#cart-items tbody');
+            $cartItemsTableBody.empty();
+
+            cartItems.forEach(item => {
+                $cartItemsTableBody.append(`
+                    <tr>
+                        <td><input type="checkbox" class="item-select" data-id="${item.id}" ${item.selected ? 'checked' : ''}></td>
+                        <td><img src="assets/images/${item.image}" alt="${item.name}" width="50"></td>
+                        <td>${item.name}</td>
+                        <td>${item.price.toFixed(2)}</td>
+                        <td><input type="number" class="item-quantity" data-id="${item.id}" value="${item.quantity}" min="1"></td>
+                        <td>${(item.price * item.quantity).toFixed(2)}</td>
+                        <td><button class="remove-item-btn" data-id="${item.id}">Remove</button></td>
+                    </tr>
+                `);
+            });
+
+            updateCartSummary();
+        }
+
+        function updateCartSummary() {
+            let selectedItems = 0;
+            let selectedAmount = 0.00;
+            let totalItems = 0;
+            let totalAmount = 0.00;
+
+            $('#cart-items tbody tr').each(function () {
+                const isSelected = $(this).find('.item-select').is(':checked');
+                const quantity = parseInt($(this).find('.item-quantity').val(), 10);
+                const price = parseFloat($(this).find('td:nth-child(6)').text());
+
+                if (isSelected) {
+                    selectedItems += quantity;
+                    selectedAmount += price;
+                }
+
+                totalItems += quantity;
+                totalAmount += price;
+            });
+
+            $('#selected-items').text(selectedItems);
+            $('#selected-amount').text(selectedAmount.toFixed(2));
+            $('#total-items').text(totalItems);
+            $('#total-amount').text(totalAmount.toFixed(2));
+        }
+
+        function updateCartItemQuantity(itemId, newQuantity) {
+            // Update the cart item quantity in the data store (local storage, session, etc.)
+            // Here we'll just update the displayed total for this example
+            const $row = $(`#cart-items tbody tr`).filter(function () {
+                return $(this).find('.item-quantity').data('id') == itemId;
+            });
+
+            const pricePerItem = parseFloat($row.find('td:nth-child(4)').text());
+            const newTotal = pricePerItem * newQuantity;
+            $row.find('td:nth-child(6)').text(newTotal.toFixed(2));
+
+            updateCartSummary();
+        }
+    </script>
 </body>
 
 </html>

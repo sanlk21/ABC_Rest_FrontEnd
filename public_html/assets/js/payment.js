@@ -1,148 +1,219 @@
+let order = {};
+let cartItems = [];
+
 $(document).ready(function() {
-    let selectedItems = JSON.parse(localStorage.getItem('selectedItems')) || [];
-    let totalAmount = 0;
-    let discountedAmount = 0;
-    let appliedOffers = [];
-
-    function displayOrderSummary() {
-        const $orderSummary = $('#order-summary');
-        $orderSummary.empty();
-
-        $orderSummary.append('<h2>Order Summary</h2>');
-        const $itemList = $('<ul></ul>');
-
-        selectedItems.forEach(item => {
-            $itemList.append(`<li>${item.name} x ${item.quantity} - ${(item.price * item.quantity).toLocaleString('en-LK', { style: 'currency', currency: 'LKR' })}</li>`);
-        });
-
-        $orderSummary.append($itemList);
-
-        totalAmount = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        discountedAmount = totalAmount;
-
-        $orderSummary.append(`<p>Total: ${totalAmount.toLocaleString('en-LK', { style: 'currency', currency: 'LKR' })}</p>`);
-        $orderSummary.append(`<p>Discounted Total: ${discountedAmount.toLocaleString('en-LK', { style: 'currency', currency: 'LKR' })}</p>`);
+    // Function to get URL parameters
+    function getUrlParameter(name) {
+        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+        var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+        var results = regex.exec(location.search);
+        return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
     }
 
-    function displayAvailableOffers() {
-        const $availableOffers = $('#available-offers');
-        $availableOffers.empty();
+    // Try to get cart data from URL parameter first
+    const cartData = getUrlParameter('cart');
+    
+    if (cartData) {
+        try {
+            const parsedCart = JSON.parse(decodeURIComponent(cartData));
+            cartItems = parsedCart.cartItems;
+        } catch (error) {
+            console.error('Error parsing cart data from URL:', error);
+        }
+    }
 
-        const offers = [
-            { code: 'ONLINE10', discount: 0.1, minAmount: 2000 },
-            { code: 'WEEKEND15', discount: 0.15, minAmount: 3000 },
-        ];
+    // If cart is still empty, try to get it from localStorage
+    if (cartItems.length === 0) {
+        cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+    }
+    
+    if (cartItems.length > 0) {
+        displayOrderSummary();
+    } else {
+        alert('Your cart is empty. Please add items to your cart before proceeding to checkout.');
+        window.location.href = 'menu.html';
+    }
 
-        offers.forEach(offer => {
-            if (totalAmount >= offer.minAmount) {
-                const $offerBtn = $(`<button class="offer-btn" data-code="${offer.code}">${offer.code} - ${offer.discount * 100}% off</button>`);
-                $availableOffers.append($offerBtn);
+    // Payment method selection
+    $('input[name="paymentMethod"]').change(function() {
+        if ($(this).val() === 'CREDIT_CARD' || $(this).val() === 'DEBIT_CARD') {
+            $('#cardDetails').show();
+        } else {
+            $('#cardDetails').hide();
+        }
+    });
+
+    // Place order
+    $('#confirmOrder').click(function() {
+        if (validateForm()) {
+            createOrder();
+        }
+    });
+
+    // Close modal and redirect
+    $('#closeModal').click(function() {
+        $('#orderConfirmation').addClass('hidden');
+        window.location.href = 'index.html'; // Redirect to home page
+    });
+
+    // Initially hide the modal
+    $('#orderConfirmation').addClass('hidden');
+});
+
+function displayOrderSummary() {
+    const orderItems = $('#orderItems');
+    orderItems.empty();
+
+    let total = 0;
+    cartItems.forEach(item => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+        orderItems.append(`
+            <div class="order-item">
+                <span>${item.name || item.item.name}</span>
+                <span>Quantity: ${item.quantity}</span>
+                <span>Rs. ${itemTotal.toFixed(2)}</span>
+            </div>
+        `);
+    });
+
+    $('#orderTotal').text(`Total: Rs. ${total.toFixed(2)}`);
+}
+
+function validateForm() {
+    const requiredFields = ['customerName', 'customerEmail', 'customerPhone', 'customerAddress'];
+    let isValid = true;
+
+    requiredFields.forEach(field => {
+        const value = $(`#${field}`).val().trim();
+        if (!value) {
+            alert(`Please fill in the ${field.replace('customer', '').toLowerCase()} field.`);
+            isValid = false;
+            return false;
+        }
+    });
+
+    if (!isValid) return false;
+
+    const email = $('#customerEmail').val().trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        alert('Please enter a valid email address.');
+        return false;
+    }
+
+    const phone = $('#customerPhone').val().trim();
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(phone)) {
+        alert('Please enter a valid 10-digit phone number.');
+        return false;
+    }
+
+    const paymentMethod = $('input[name="paymentMethod"]:checked').val();
+    if (paymentMethod === 'CREDIT_CARD' || paymentMethod === 'DEBIT_CARD') {
+        const cardFields = ['cardNumber', 'cardExpiry', 'cardCVC'];
+        cardFields.forEach(field => {
+            const value = $(`#${field}`).val().trim();
+            if (!value) {
+                alert(`Please fill in the ${field.replace('card', '').toLowerCase()} field.`);
+                isValid = false;
+                return false;
             }
         });
-    }
 
-    function applyOffer(offerCode) {
-        const offers = {
-            'ONLINE10': { discount: 0.1, minAmount: 2000 },
-            'WEEKEND15': { discount: 0.15, minAmount: 3000 },
-        };
+        if (!isValid) return false;
 
-        const offer = offers[offerCode];
+        const cardNumber = $('#cardNumber').val().trim();
+        if (!/^\d{16}$/.test(cardNumber)) {
+            alert('Please enter a valid 16-digit card number.');
+            return false;
+        }
 
-        if (offer && totalAmount >= offer.minAmount && !appliedOffers.includes(offerCode)) {
-            discountedAmount -= totalAmount * offer.discount;
-            appliedOffers.push(offerCode);
-            updateOrderSummary();
+        const cardExpiry = $('#cardExpiry').val().trim();
+        if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(cardExpiry)) {
+            alert('Please enter a valid expiry date (MM/YY).');
+            return false;
+        }
+
+        const cardCVC = $('#cardCVC').val().trim();
+        if (!/^\d{3}$/.test(cardCVC)) {
+            alert('Please enter a valid 3-digit CVC.');
+            return false;
         }
     }
 
-    function updateOrderSummary() {
-        $('#order-summary').find('p').last().text(`Discounted Total: ${discountedAmount.toLocaleString('en-LK', { style: 'currency', currency: 'LKR' })}`);
-    }
+    return true;
+}
 
-    function displayPaymentDetails(method) {
-        const $paymentDetails = $('#payment-details');
-        $paymentDetails.empty();
+function createOrder() {
+    const orderData = {
+        user: {
+            email: $('#customerEmail').val().trim()
+        },
+        orderDetails: cartItems.map(item => ({
+            item: { id: item.id || item.item.id },
+            quantity: item.quantity,
+            price: item.price
+        })),
+        startDate: new Date().toISOString(),
+        endDate: new Date().toISOString(), // You might want to adjust this for future orders
+        orderDate: new Date().toISOString(),
+        totalAmount: cartItems.reduce((total, item) => total + (item.price * item.quantity), 0),
+        status: "PENDING",
+        type: $('#orderType').val()
+    };
 
-        switch (method) {
-            case 'card':
-                $paymentDetails.append(`
-                    <h3>Card Details</h3>
-                    <input type="text" placeholder="Card Number" required>
-                    <input type="text" placeholder="Cardholder Name" required>
-                    <input type="text" placeholder="Expiry Date (MM/YY)" required>
-                    <input type="text" placeholder="CVV" required>
-                `);
-                break;
-            case 'online':
-                $paymentDetails.append(`
-                    <h3>Online Payment</h3>
-                    <p>You will be redirected to our secure payment gateway to complete your payment.</p>
-                `);
-                break;
-            case 'cod':
-                $paymentDetails.append(`
-                    <h3>Cash on Delivery</h3>
-                    <p>Please have the exact amount of ${discountedAmount.toLocaleString('en-LK', { style: 'currency', currency: 'LKR' })} ready for the delivery person.</p>
-                `);
-                break;
-            default:
-                $paymentDetails.append(`
-                    <h3>Cash Payment</h3>
-                    <p>Please pay ${discountedAmount.toLocaleString('en-LK', { style: 'currency', currency: 'LKR' })} at the counter.</p>
-                `);
-        }
-    }
-
-    displayOrderSummary();
-    displayAvailableOffers();
-
-    $(document).on('click', '.offer-btn', function() {
-        const offerCode = $(this).data('code');
-        applyOffer(offerCode);
-        $(this).prop('disabled', true);
-    });
-
-    $('#apply-staff-discount').click(function() {
-        const staffCode = $('#staff-discount-code').val();
-        // In a real application, you would verify this code with the server
-        if (staffCode === 'STAFF20') {
-            discountedAmount *= 0.8; // 20% staff discount
-            updateOrderSummary();
-            $(this).prop('disabled', true);
-        } else {
-            alert('Invalid staff discount code');
+    $.ajax({
+        url: 'http://localhost:8080/api/v1/orders/saveOrder',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(orderData),
+        success: function(response) {
+            console.log('Order created:', response);
+            createPayment(response.id);
+        },
+        error: function(xhr, status, error) {
+            console.error('Error creating order:', error);
+            alert('There was an error creating your order. Please try again.');
         }
     });
+}
 
-    $('input[name="payment-method"]').change(function() {
-        displayPaymentDetails($(this).val());
-    });
+function createPayment(orderId) {
+    const paymentData = {
+        paymentMethod: $('input[name="paymentMethod"]:checked').val(),
+        status: "PENDING",
+        amount: cartItems.reduce((total, item) => total + (item.price * item.quantity), 0),
+        user: {
+            email: $('#customerEmail').val().trim()
+        },
+        order: {
+            id: orderId
+        },
+        paymentDate: new Date().toISOString()
+    };
 
-    $('#confirm-payment').click(function() {
-        const paymentMethod = $('input[name="payment-method"]:checked').val();
-        if (!paymentMethod) {
-            alert('Please select a payment method');
-            return;
+    $.ajax({
+        url: 'http://localhost:8080/api/v1/payments/create',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(paymentData),
+        success: function(response) {
+            console.log('Payment created:', response);
+            showConfirmation();
+            clearCart();
+        },
+        error: function(xhr, status, error) {
+            console.error('Error creating payment:', error);
+            alert('There was an error processing your payment. Please try again.');
         }
-
-        // In a real application, you would send this data to your server
-        const orderData = {
-            items: selectedItems,
-            totalAmount: totalAmount,
-            discountedAmount: discountedAmount,
-            appliedOffers: appliedOffers,
-            paymentMethod: paymentMethod
-        };
-        
-
-        console.log('Order data:', orderData);
-
-        // Simulate payment processing
-        setTimeout(() => {
-            alert('Payment successful! Thank you for your order.');
-            localStorage.removeItem('selectedItems');
-            window.location.href = 'index.html'; // Redirect to homepage
-        }, 2000);
     });
-});
+}
+
+function showConfirmation() {
+    $('#orderConfirmation').removeClass('hidden');
+}
+
+function clearCart() {
+    localStorage.removeItem('cart');
+}

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order History - ABC Restaurant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/order-history.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="logo">ABC Restaurant</a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="menu.html">Menu</a>
+                <a href="#" id="accountLink"><i class="fas fa-user"></i> Account</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h1>Your Order History</h1>
+
+        <div class="email-input">
+            <input type="email" id="userEmail" placeholder="Enter your email">
+            <button id="fetchOrders">Fetch Orders</button>
+        </div>
+
+        <div id="orderHistory"></div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 ABC Restaurant. All rights reserved.</p>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="assets/js/order-history.js"></script>
+</body>
+</html>

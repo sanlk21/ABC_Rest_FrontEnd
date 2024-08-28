@@ -1,97 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment - Gourmet Delights Restaurant</title>
+    <title>Complete Your Order - ABC Restaurant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="assets/css/payment-styles.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://js.stripe.com/v3/"></script>
 </head>
-
 <body>
-    <nav class="top-nav">
-        <div class="logo">Gourmet Delights</div>
-        <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="menu.html">Menu</a></li>
-            <li><a href="cart.html">Cart</a></li>
-        </ul>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="logo">ABC Restaurant</a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="menu.html">Menu</a>
+            </div>
+        </div>
     </nav>
 
-    <main>
+    <main class="container">
         <h1>Complete Your Order</h1>
 
-        <div class="payment-container">
-            <section id="order-summary">
-                <h2>Order Summary</h2>
-                <div id="order-items"></div>
-                <div id="order-totals">
-                    <p>Subtotal: <span id="subtotal"></span></p>
-                    <p>Tax (15%): <span id="tax"></span></p>
-                    <p>Total: <span id="total"></span></p>
-                </div>
-            </section>
-
-            <section id="discount-section">
-                <h2>Discounts and Offers</h2>
-                <div id="available-offers"></div>
-                <div id="promo-code">
-                    <input type="text" id="promo-input" placeholder="Enter promo code">
-                    <button id="apply-promo">Apply</button>
-                </div>
-                <div id="staff-discount">
-                    <input type="text" id="staff-code-input" placeholder="Staff discount code">
-                    <button id="apply-staff-discount">Apply Staff Discount</button>
-                </div>
-            </section>
-
-            <section id="payment-methods">
-                <h2>Select Payment Method</h2>
-                <div class="payment-options">
-                    <label class="payment-option">
-                        <input type="radio" name="payment-method" value="cash">
-                        <span class="checkmark"></span>
-                        Cash
-                    </label>
-                    <label class="payment-option">
-                        <input type="radio" name="payment-method" value="card">
-                        <span class="checkmark"></span>
-                        Card
-                    </label>
-                    <label class="payment-option">
-                        <input type="radio" name="payment-method" value="online">
-                        <span class="checkmark"></span>
-                        Online Payment
-                    </label>
-                    <label class="payment-option">
-                        <input type="radio" name="payment-method" value="cod">
-                        <span class="checkmark"></span>
-                        Cash on Delivery
-                    </label>
-                </div>
-            </section>
-
-            <section id="payment-details"></section>
-
-            <section id="customer-info">
-                <h2>Customer Information</h2>
-                <input type="text" id="customer-name" placeholder="Full Name" required>
-                <input type="email" id="customer-email" placeholder="Email Address" required>
-                <input type="tel" id="customer-phone" placeholder="Phone Number" required>
-                <textarea id="customer-address" placeholder="Delivery Address" required></textarea>
-            </section>
-
-            <button id="confirm-payment">Confirm and Pay</button>
+        <div class="order-summary">
+            <h2>Order Summary</h2>
+            <div id="orderItems"></div>
+            <div id="orderTotal" class="order-total"></div>
         </div>
+
+        <div class="payment-section">
+            <h2>Payment Details</h2>
+            <div class="payment-methods">
+                <label>
+                    <input type="radio" name="paymentMethod" value="CREDIT_CARD" checked>
+                    Credit Card
+                </label>
+                <label>
+                    <input type="radio" name="paymentMethod" value="DEBIT_CARD">
+                    Debit Card
+                </label>
+                <label>
+                    <input type="radio" name="paymentMethod" value="PAYPAL">
+                    PayPal
+                </label>
+                <label>
+                    <input type="radio" name="paymentMethod" value="CASH_ON_DELIVERY">
+                    Cash on Delivery
+                </label>
+            </div>
+            <div id="cardDetails">
+                <input type="text" id="cardNumber" placeholder="Card Number" maxlength="16">
+                <div class="card-extra">
+                    <input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5">
+                    <input type="text" id="cardCVC" placeholder="CVC" maxlength="3">
+                </div>
+            </div>
+        </div>
+
+        <div class="customer-info">
+            <h2>Customer Information</h2>
+            <input type="text" id="customerName" placeholder="Full Name" required>
+            <input type="email" id="customerEmail" placeholder="Email" required>
+            <input type="tel" id="customerPhone" placeholder="Phone Number" required>
+            <textarea id="customerAddress" placeholder="Delivery Address" required></textarea>
+        </div>
+
+        <div class="order-type">
+            <h2>Order Type</h2>
+            <select id="orderType">
+                <option value="DINEIN">Dine In</option>
+                <option value="TAKEAWAY">Takeaway</option>
+                <option value="DELIVERY">Delivery</option>
+            </select>
+        </div>
+
+        <button id="confirmOrder" class="confirm-btn">Place Order</button>
     </main>
 
     <footer>
-        <p>&copy; 2024 Gourmet Delights Restaurant. All rights reserved.</p>
+        <p>&copy; 2024 ABC Restaurant. All rights reserved.</p>
     </footer>
 
-    <script src="payment.js"></script>
-</body>
+    <div id="orderConfirmation" class="modal hidden">
+        <div class="modal-content">
+            <h2>Order Confirmed!</h2>
+            <p>Thank you for your order. Your order details have been sent to your email.</p>
+            <button id="closeModal" class="confirm-btn">Close</button>
+        </div>
+    </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="assets/js/payment.js"></script>
+</body>
 </html>
