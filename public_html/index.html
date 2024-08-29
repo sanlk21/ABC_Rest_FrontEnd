@@ -179,30 +179,68 @@
     </div>
 
     <!-- book a table Section  -->
-    <div class="container-fluid has-bg-overlay text-center text-light has-height-lg middle-items" id="book-table">
-        <div class="">
-            <h2 class="section-title mb-5">BOOK A TABLE</h2>
-            <div class="row mb-5">
-                <div class="col-sm-6 col-md-3 col-xs-12 my-2">
-                    <input type="email" id="booktable" class="form-control form-control-lg custom-form-control"
-                        placeholder="EMAIL">
-                </div>
-                <div class="col-sm-6 col-md-3 col-xs-12 my-2">
-                    <input type="number" id="booktable" class="form-control form-control-lg custom-form-control"
-                        placeholder="NUMBER OF GUESTS" max="20" min="0">
-                </div>
-                <div class="col-sm-6 col-md-3 col-xs-12 my-2">
-                    <input type="time" id="booktable" class="form-control form-control-lg custom-form-control"
-                        placeholder="EMAIL">
-                </div>
-                <div class="col-sm-6 col-md-3 col-xs-12 my-2">
-                    <input type="date" id="booktable" class="form-control form-control-lg custom-form-control"
-                        placeholder="12/12/12">
-                </div>
+<div class="container-fluid has-bg-overlay text-center text-light has-height-lg middle-items" id="book-table">
+    <div class="">
+        <h2 class="section-title mb-5">BOOK A TABLE</h2>
+        <div class="row mb-5">
+            <div class="col-sm-6 col-md-3 col-xs-12 my-2">
+                <input type="email" id="userEmail" class="form-control form-control-lg custom-form-control"
+                    placeholder="EMAIL" required>
             </div>
-            <a href="#" class="btn btn-lg btn-primary" id="rounded-btn">FIND TABLE</a>
+            <div class="col-sm-6 col-md-3 col-xs-12 my-2">
+                <input type="number" id="numberOfGuests" class="form-control form-control-lg custom-form-control"
+                    placeholder="NUMBER OF GUESTS" max="20" min="1" required>
+            </div>
+            <div class="col-sm-6 col-md-3 col-xs-12 my-2">
+                <input type="time" id="time" class="form-control form-control-lg custom-form-control" required>
+            </div>
+            <div class="col-sm-6 col-md-3 col-xs-12 my-2">
+                <input type="date" id="date" class="form-control form-control-lg custom-form-control" required>
+            </div>
         </div>
+        <button class="btn btn-lg btn-primary" id="findTableBtn">FIND TABLE</button>
     </div>
+</div>
+
+<script>
+// Function to handle the reservation submission
+document.getElementById('findTableBtn').addEventListener('click', function() {
+    const userEmail = document.getElementById('userEmail').value;
+    const numberOfGuests = document.getElementById('numberOfGuests').value;
+    const time = document.getElementById('time').value;
+    const date = document.getElementById('date').value;
+
+    if (!userEmail || !numberOfGuests || !time || !date) {
+        alert('Please fill out all fields.');
+        return;
+    }
+
+    const reservationData = {
+        userEmail: userEmail,
+        numberOfGuests: numberOfGuests,
+        date: `${date}T${time}:00`, // Combine date and time
+        type: 'DINE_IN', // Assuming dine-in for this example
+        status: 'PENDING'
+    };
+
+    fetch('http://localhost:8080/reservations', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(reservationData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('Reservation made successfully!');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to make a reservation. Please try again later.');
+    });
+});
+</script>
+
 
 
     <!-- CONTACT Section  -->

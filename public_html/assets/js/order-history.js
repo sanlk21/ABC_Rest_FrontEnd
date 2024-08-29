@@ -1,48 +1,51 @@
-$(document).ready(function () {
-    $('#fetchOrders').click(function () {
+$(document).ready(function() {
+    $('#fetchOrders').click(function() {
         const email = $('#userEmail').val().trim();
-        if (!email) {
-            alert('Please enter your email');
+        const password = $('#userPassword').val().trim();
+
+        if (!email || !password) {
+            alert('Please enter both your email and password.');
             return;
         }
 
+        // Send request to backend to fetch orders
         $.ajax({
-            url: `http://localhost:8080/api/v1/orders/user/${email}`,
-            method: 'GET',
-            success: function (orders) {
-                displayOrders(orders);
+            url: 'http://localhost:8080/api/v1/orders/user/' + email,
+            method: 'POST', // Assuming POST for sending email and password securely
+            contentType: 'application/json',
+            data: JSON.stringify({ email: email, password: password }),
+            success: function(response) {
+                displayOrderHistory(response);
             },
-            error: function (xhr, status, error) {
+            error: function(xhr, status, error) {
                 console.error('Error fetching orders:', error);
-                alert('Failed to fetch orders. Please try again.');
+                $('#orderHistory').html('<p>There was an error fetching your order history. Please try again.</p>');
             }
         });
     });
 
-    function displayOrders(orders) {
+    function displayOrderHistory(orders) {
         const orderHistory = $('#orderHistory');
         orderHistory.empty();
 
         if (orders.length === 0) {
-            orderHistory.append('<p>No orders found.</p>');
+            orderHistory.html('<p>No orders found for this email.</p>');
             return;
         }
 
         orders.forEach(order => {
             const orderHtml = `
                 <div class="order">
-                    <h3>Order ID: #${order.id}</h3>
-                    <p><strong>Date:</strong> ${new Date(order.orderDate).toLocaleDateString()}</p>
-                    <p><strong>Status:</strong> ${order.status}</p>
-                    <p><strong>Total Amount:</strong> Rs. ${order.totalAmount.toFixed(2)}</p>
+                    <h3>Order #${order.id} - ${new Date(order.orderDate).toLocaleDateString()}</h3>
+                    <p>Status: ${order.status}</p>
+                    <p>Total Amount: $${order.totalAmount.toFixed(2)}</p>
                     <h4>Items:</h4>
                     <ul>
-                        ${order.orderDetails.map(detail => `
-                            <li>${detail.quantity}x ${detail.item.name} - Rs. ${detail.price.toFixed(2)}</li>
+                        ${order.orderDetails.map(item => `
+                            <li>${item.quantity}x Item #${item.itemId} - $${item.price.toFixed(2)}</li>
                         `).join('')}
                     </ul>
                 </div>
-                <hr>
             `;
             orderHistory.append(orderHtml);
         });

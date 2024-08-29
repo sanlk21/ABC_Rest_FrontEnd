@@ -9,222 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <style>
-        :root {
-            --primary-color: #4CAF50;
-            --secondary-color: #45a049;
-            --text-color: #e0e0e0;
-            --bg-color: #121212;
-            --card-bg-color: #1e1e1e;
-            --hover-color: #2c2c2c;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            transition: background-color 0.3s ease;
-        }
-
-        .container {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        .sidebar {
-            width: 250px;
-            background-color: var(--card-bg-color);
-            padding: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar.collapsed {
-            width: 80px;
-        }
-
-        .sidebar-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 30px;
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-
-        .toggle-sidebar {
-            cursor: pointer;
-            font-size: 20px;
-        }
-
-        .nav-links {
-            list-style: none;
-        }
-
-        .nav-links li {
-            margin-bottom: 15px;
-        }
-
-        .nav-links a {
-            color: var(--text-color);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            transition: color 0.3s ease;
-        }
-
-        .nav-links a:hover {
-            color: var(--primary-color);
-        }
-
-        .nav-links i {
-            margin-right: 10px;
-            width: 20px;
-            text-align: center;
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .staff-name {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .theme-toggle {
-            background: none;
-            border: none;
-            color: var(--text-color);
-            cursor: pointer;
-            font-size: 20px;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-
-        .dashboard-card {
-            background-color: var(--card-bg-color);
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .dashboard-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .card-header {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-
-        .table-responsive {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th,
-        td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid var(--hover-color);
-        }
-
-        th {
-            background-color: var(--hover-color);
-            font-weight: 600;
-        }
-
-        .btn {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--secondary-color);
-        }
-
-        .chart-container {
-            height: 300px;
-        }
-
-        footer {
-            background-color: var(--card-bg-color);
-            padding: 20px;
-            text-align: center;
-            margin-top: 30px;
-        }
-
-        /* Modal styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-
-        .modal-content {
-            background-color: var(--card-bg-color);
-            margin: 15% auto;
-            padding: 20px;
-            border-radius: 10px;
-            width: 80%;
-            max-width: 500px;
-        }
-
-        .close {
-            color: var(--text-color);
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .close:hover {
-            color: var(--primary-color);
-        }
-    </style>
+    <link rel="stylesheet" href="assets/css/staff.css">
 </head>
 
 <body>
@@ -237,8 +22,8 @@
             <ul class="nav-links">
                 <li><a href="#dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
                 <li><a href="#orders"><i class="fas fa-utensils"></i> Orders</a></li>
-                <li><a href="#reservations"><i class="far fa-calendar-alt"></i> Reservations</a></li>
                 <li><a href="#inventory"><i class="fas fa-box"></i> Inventory</a></li>
+                <li><a href="#reservations"><i class="fas fa-calendar-alt"></i> Reservations</a></li>
                 <li><a href="#staff"><i class="fas fa-users"></i> Staff</a></li>
                 <li><a href="#reports"><i class="fas fa-chart-bar"></i> Reports</a></li>
                 <li><a href="#settings"><i class="fas fa-cog"></i> Settings</a></li>
@@ -251,41 +36,42 @@
             </div>
             <div class="dashboard-grid">
                 <section id="orders" class="dashboard-card">
-                    <h3 class="card-header">Active Orders</h3>
+                    <h3 class="card-header">Manage Orders</h3>
                     <div class="table-responsive">
-                        <table id="activeOrdersTable">
+                        <table id="ordersTable">
                             <thead>
                                 <tr>
                                     <th>Order ID</th>
-                                    <th>Customer</th>
+                                    <th>Customer Email</th>
                                     <th>Type</th>
                                     <th>Status</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="activeOrdersBody">
-                                <!-- Active orders will be dynamically inserted here -->
+                            <tbody id="ordersBody">
+                                <!-- Orders will be dynamically inserted here -->
                             </tbody>
                         </table>
                     </div>
                 </section>
-                <section id="order-cart" class="dashboard-card">
-                    <h3 class="card-header">Order Cart</h3>
+                <section id="reservations" class="dashboard-card">
+                    <h3 class="card-header">Manage Reservations</h3>
                     <div class="table-responsive">
-                        <table id="orderCartTable">
+                        <table id="reservationsTable">
                             <thead>
                                 <tr>
-                                    <th>Item</th>
-                                    <th>Quantity</th>
-                                    <th>Price</th>
+                                    <th>Reservation ID</th>
+                                    <th>Customer Email</th>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="orderCartBody">
-                                <!-- Cart items will be dynamically inserted here -->
+                            <tbody id="reservationsBody">
+                                <!-- Reservations will be dynamically inserted here -->
                             </tbody>
                         </table>
-                        <button class="btn btn-primary" onclick="placeOrder()">Place Order</button>
                     </div>
                 </section>
                 <section id="sales" class="dashboard-card">
@@ -296,10 +82,8 @@
                 </section>
                 <section id="inventory" class="dashboard-card">
                     <h3 class="card-header">Inventory Alert</h3>
-                    <ul>
-                        <li>Tomatoes - Low stock</li>
-                        <li>Chicken - Reorder soon</li>
-                        <li>Napkins - Out of stock</li>
+                    <ul id="inventoryAlertList">
+                        <!-- Inventory alerts will be dynamically inserted here -->
                     </ul>
                 </section>
             </div>
@@ -318,205 +102,16 @@
         </div>
     </div>
 
-    <script>
-        // Theme toggle
-        const themeToggle = document.querySelector('.theme-toggle');
-        const body = document.body;
+    <!-- Modal for reservation details -->
+    <div id="reservationModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Reservation Details</h2>
+            <div id="reservationDetails"></div>
+        </div>
+    </div>
 
-        themeToggle.addEventListener('click', () => {
-            body.classList.toggle('light-theme');
-            themeToggle.innerHTML = body.classList.contains('light-theme') ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
-        });
-
-        // Sidebar toggle
-        const toggleSidebar = document.querySelector('.toggle-sidebar');
-        const sidebar = document.querySelector('.sidebar');
-
-        toggleSidebar.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-        });
-
-        // Sales chart
-        const ctx = document.getElementById('salesChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                datasets: [{
-                    label: 'Sales',
-                    data: [12, 19, 3, 5, 2, 3, 10],
-                    borderColor: '#4CAF50',
-                    tension: 0.1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
-        // Cart and Order Management
-        let cart = [];
-
-        function addToCart(itemName, price) {
-            const existingItem = cart.find(item => item.name === itemName);
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({ name: itemName, quantity: 1, price });
-            }
-            renderCart();
-        }
-
-        function incrementItem(index) {
-            cart[index].quantity += 1;
-            renderCart();
-        }
-
-        function decrementItem(index) {
-            if (cart[index].quantity > 1) {
-                cart[index].quantity -= 1;
-            } else {
-                cart.splice(index, 1);
-            }
-            renderCart();
-        }
-
-        function renderCart() {
-            const cartBody = document.getElementById('orderCartBody');
-            cartBody.innerHTML = '';
-            cart.forEach((item, index) => {
-                const row = `
-                    <tr>
-                        <td>${item.name}</td>
-                        <td>${item.quantity}</td>
-                        <td>$${(item.price * item.quantity).toFixed(2)}</td>
-                        <td>
-                            <button class="btn btn-primary" onclick="incrementItem(${index})">+</button>
-                            <button class="btn btn-primary" onclick="decrementItem(${index})">-</button>
-                        </td>
-                    </tr>
-                `;
-                cartBody.innerHTML += row;
-            });
-        }
-
-        function placeOrder() {
-            if (cart.length === 0) {
-                alert('Cart is empty!');
-                return;
-            }
-
-            axios.post('http://localhost:8080/api/v1/orders', { items: cart })
-                .then(response => {
-                    alert('Order placed successfully!');
-                    cart = [];
-                    renderCart();
-                    fetchActiveOrders(); // Refresh the orders list
-                })
-                .catch(error => {
-                    console.error('Error placing order:', error);
-                    alert('Failed to place order. Please try again.');
-                });
-        }
-
-        function fetchActiveOrders() {
-            axios.get('http://localhost:8080/api/v1/orders/active')
-                .then(response => {
-                    const activeOrders = response.data;
-                    const tableBody = document.getElementById('activeOrdersBody');
-                    tableBody.innerHTML = '';
-
-                    activeOrders.forEach(order => {
-                        const row = `
-                            <tr>
-                                <td>#${order.id}</td>
-                                <td>${order.customerName}</td>
-                                <td>${order.type}</td>
-                                <td>${order.status}</td>
-                                <td>
-                                    <button class="btn btn-primary" onclick="updateOrderStatus(${order.id})">
-                                        Update Status
-                                    </button>
-                                    <button class="btn btn-primary" onclick="showOrderDetails(${order.id})">
-                                        Details
-                                    </button>
-                                </td>
-                            </tr>
-                        `;
-                        tableBody.innerHTML += row;
-                    });
-                })
-                .catch(error => {
-                    console.error('Error fetching active orders:', error);
-                });
-        }
-
-        function updateOrderStatus(orderId) {
-            const newStatus = prompt('Enter new status (PROCESSING, COMPLETED, CANCELLED):');
-            if (newStatus) {
-                axios.put(`http://localhost:8080/api/v1/orders/${orderId}`, { status: newStatus })
-                    .then(response => {
-                        alert(`Order #${orderId} status updated to ${newStatus}`);
-                        fetchActiveOrders(); // Refresh the orders list
-                    })
-                    .catch(error => {
-                        console.error('Error updating order status:', error);
-                        alert('Failed to update order status. Please try again.');
-                    });
-            }
-        }
-
-        function showOrderDetails(orderId) {
-            axios.get(`http://localhost:8080/api/v1/orders/${orderId}`)
-                .then(response => {
-                    const order = response.data;
-                    const detailsHtml = `
-                        <p><strong>Order ID:</strong> #${order.id}</p>
-                        <p><strong>Customer:</strong> ${order.customerName}</p>
-                        <p><strong>Type:</strong> ${order.type}</p>
-                        <p><strong>Status:</strong> ${order.status}</p>
-                        <p><strong>Total Amount:</strong> $${order.totalAmount.toFixed(2)}</p>
-                        <h3>Order Items:</h3>
-                        <ul>
-                            ${order.orderItems.map(item => `
-                                <li>${item.quantity}x ${item.itemName} - $${item.price.toFixed(2)}</li>
-                            `).join('')}
-                        </ul>
-                    `;
-                    document.getElementById('orderDetails').innerHTML = detailsHtml;
-                    document.getElementById('orderModal').style.display = 'block';
-                })
-                .catch(error => {
-                    console.error('Error fetching order details:', error);
-                    alert('Failed to fetch order details. Please try again.');
-                });
-        }
-
-        // Fetch active orders when the page loads
-        document.addEventListener('DOMContentLoaded', fetchActiveOrders);
-
-        // Periodically fetch active orders every 10 seconds
-        setInterval(fetchActiveOrders, 10000);
-
-        // Close modal on outside click
-        window.onclick = function(event) {
-            const modal = document.getElementById('orderModal');
-            if (event.target == modal) {
-                modal.style.display = 'none';
-            }
-        }
-
-        // Close modal on close button click
-        document.querySelector('.close').onclick = function() {
-            document.getElementById('orderModal').style.display = 'none';
-        }
-    </script>
+    <script src="assets/js/staff.js"></script>
 </body>
 
 </html>
