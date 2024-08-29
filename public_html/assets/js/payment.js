@@ -68,21 +68,12 @@ function displayOrderSummary() {
 }
 
 function validateForm() {
-    const requiredFields = ['customerName', 'customerEmail', 'customerPhone', 'customerAddress'];
-    let isValid = true;
+    const email = $('#UserEmail').val().trim();
+    if (!email) {
+        alert('Please enter your email address.');
+        return false;
+    }
 
-    requiredFields.forEach(field => {
-        const value = $(`#${field}`).val().trim();
-        if (!value) {
-            alert(`Please fill in the ${field.replace('customer', '').toLowerCase()} field.`);
-            isValid = false;
-            return false;
-        }
-    });
-
-    if (!isValid) return false;
-
-    const email = $('#customerEmail').val().trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
         alert('Please enter a valid email address.');
@@ -92,16 +83,13 @@ function validateForm() {
     const paymentMethod = $('input[name="paymentMethod"]:checked').val();
     if (paymentMethod === 'CREDIT_CARD' || paymentMethod === 'DEBIT_CARD') {
         const cardFields = ['cardNumber', 'cardExpiry', 'cardCVC'];
-        cardFields.forEach(field => {
+        for (let field of cardFields) {
             const value = $(`#${field}`).val().trim();
             if (!value) {
                 alert(`Please fill in the ${field.replace('card', '').toLowerCase()} field.`);
-                isValid = false;
                 return false;
             }
-        });
-
-        if (!isValid) return false;
+        }
 
         const cardNumber = $('#cardNumber').val().trim();
         if (!/^\d{16}$/.test(cardNumber)) {
@@ -129,16 +117,17 @@ function createOrder() {
     // Disable the order button and show loading state
     $('#confirmOrder').prop('disabled', true).text('Processing...');
 
+    const now = new Date();
     const orderData = {
-        userEmail: $('#customerEmail').val().trim(),
+        userEmail: $('#UserEmail').val().trim(),
         orderDetails: cartItems.map(item => ({
             itemId: item.id || item.item.id,
             quantity: item.quantity,
             price: item.price
         })),
-        startDate: new Date().toISOString(),
-        endDate: new Date().toISOString(),
-        orderDate: new Date().toISOString(),
+        startDate: now.toISOString(),
+        endDate: now.toISOString(), // You may want to set this to a future date for delivery orders
+        orderDate: now.toISOString(),
         totalAmount: cartItems.reduce((total, item) => total + (item.price * item.quantity), 0),
         status: "PENDING",
         type: $('#orderType').val()
@@ -153,44 +142,13 @@ function createOrder() {
         data: JSON.stringify(orderData),
         success: function(response) {
             console.log('Order created successfully:', response);
-            createPayment(response.id);
+            showOrderConfirmation(true, 'Your order has been successfully placed!');
+            clearCart();
         },
         error: function(xhr, status, error) {
             console.error('Error creating order:', error);
             console.error('Server response:', xhr.responseText);
             showOrderConfirmation(false, 'There was an error creating your order. Please try again.');
-            // Re-enable the order button
-            $('#confirmOrder').prop('disabled', false).text('Place Order');
-        }
-    });
-}
-
-function createPayment(orderId) {
-    const paymentData = {
-        paymentMethod: $('input[name="paymentMethod"]:checked').val(),
-        status: "PENDING",
-        amount: cartItems.reduce((total, item) => total + (item.price * item.quantity), 0),
-        userEmail: $('#customerEmail').val().trim(),
-        orderId: orderId,
-        paymentDate: new Date().toISOString()
-    };
-
-    console.log('Sending payment data:', paymentData);
-
-    $.ajax({
-        url: 'http://localhost:8080/api/v1/payments/create',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(paymentData),
-        success: function(response) {
-            console.log('Payment created successfully:', response);
-            showOrderConfirmation(true, 'Your order has been successfully placed!');
-            clearCart();
-        },
-        error: function(xhr, status, error) {
-            console.error('Error creating payment:', error);
-            console.error('Server response:', xhr.responseText);
-            showOrderConfirmation(false, 'There was an error processing your payment. Please try again.');
         },
         complete: function() {
             // Re-enable the order button
@@ -198,6 +156,34 @@ function createPayment(orderId) {
         }
     });
 }
+
+function showOrderConfirmation(isSuccess, message) {
+    const modal = $('#orderConfirmation');
+    const modalTitle = modal.find('.modal-content h2');
+    const modalMessage = modal.find('.modal-content p');
+
+    if (isSuccess) {
+        modalTitle.text('Order Successful');
+        modalTitle.css('color', 'green');
+    } else {
+        modalTitle.text('Order Failed');
+        modalTitle.css('color', 'red');
+    }
+
+    modalMessage.text(message);
+    modal.removeClass('hidden');
+    console.log('Order confirmation modal displayed:', isSuccess ? 'Success' : 'Failure');
+}
+
+// Add this function to ensure the modal can be closed
+$(document).ready(function() {
+    $('#closeModal').click(function() {
+        $('#orderConfirmation').addClass('hidden');
+        if ($('#orderConfirmation .modal-content h2').text() === 'Order Successful') {
+            window.location.href = 'index.html'; // Redirect to home page on success
+        }
+    });
+});
 
 function showOrderConfirmation(isSuccess, message) {
     const modal = $('#orderConfirmation');
