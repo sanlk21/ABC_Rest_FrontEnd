@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,12 +9,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
-        .question { background-color: #f0f0f0; padding: 10px; margin-bottom: 10px; }
-        .answer { margin-left: 20px; }
-        textarea { width: 100%; height: 100px; }
-    </style>
+
 </head>
+
 <body>
     <div id="topNav">
         <div id="welcome">Welcome, <span id="userName">Admin</span></div>
@@ -99,6 +97,7 @@
             </div>
             <div id="qa" class="section" style="display:none;">
                 <h2>Q&A Management</h2>
+                <button onclick="displayQuestions()">Show All Questions</button>
                 <div id="questionList"></div>
             </div>
         </div>
@@ -111,57 +110,11 @@
             <form id="modalForm">
                 <!-- Form fields will be dynamically added here -->
             </form>
-            <button onclick="submitForm()">Submit</button>
+            <button type="button" onclick="submitForm()">Submit</button>
         </div>
     </div>
 
     <script src="assets/js/admin.js"></script>
-    <script>
-        // Q&A specific JavaScript
-        const questions = [
-            { id: 1, email: "user1@example.com", question: "How do I reset my password?", answer: "" },
-            { id: 2, email: "user2@example.com", question: "Where can I find my order history?", answer: "" }
-        ];
-
-        function displayQuestions() {
-            const questionList = document.getElementById('questionList');
-            questionList.innerHTML = '';
-            questions.forEach(q => {
-                const questionDiv = document.createElement('div');
-                questionDiv.className = 'question';
-                questionDiv.innerHTML = `
-                    <p><strong>From:</strong> ${q.email}</p>
-                    <p><strong>Question:</strong> ${q.question}</p>
-                    <div class="answer">
-                        <textarea id="answer-${q.id}">${q.answer}</textarea>
-                        <button onclick="submitAnswer(${q.id})">Submit Answer</button>
-                    </div>
-                `;
-                questionList.appendChild(questionDiv);
-            });
-        }
-
-        function submitAnswer(questionId) {
-            const answerText = document.getElementById(`answer-${questionId}`).value;
-            // Here you would typically send this data to your server
-            console.log(`Submitting answer for question ${questionId}: ${answerText}`);
-            alert('Answer submitted successfully!');
-        }
-
-        function showSection(sectionId) {
-            // Hide all sections
-            document.querySelectorAll('.section').forEach(section => {
-                section.style.display = 'none';
-            });
-            // Show the selected section
-            document.getElementById(sectionId).style.display = 'block';
-            if (sectionId === 'qa') {
-                displayQuestions();
-            }
-        }
-
-        // Initialize the dashboard
-        showSection('dashboard');
-    </script>
 </body>
+
 </html>

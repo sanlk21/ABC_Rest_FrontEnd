@@ -1,4 +1,3 @@
-
 let currentSection = 'dashboard';
 let currentAction = '';
 let userData = {
@@ -20,19 +19,19 @@ function showSection(sectionId) {
 function loadDashboard() {
     const dashboardContent = $('#dashboardContent');
     dashboardContent.html(`
-                <div class="dashboard-card">
-                    <h3>Total Users</h3>
-                    <p id="totalUsers">Loading...</p>
-                </div>
-                <div class="dashboard-card">
-                    <h3>Total Items</h3>
-                    <p id="totalItems">Loading...</p>
-                </div>
-                <div class="dashboard-card">
-                    <h3>Total Categories</h3>
-                    <p id="totalCategories">Loading...</p>
-                </div>
-            `);
+        <div class="dashboard-card">
+            <h3>Total Users</h3>
+            <p id="totalUsers">Loading...</p>
+        </div>
+        <div class="dashboard-card">
+            <h3>Total Items</h3>
+            <p id="totalItems">Loading...</p>
+        </div>
+        <div class="dashboard-card">
+            <h3>Total Categories</h3>
+            <p id="totalCategories">Loading...</p>
+        </div>
+    `);
 
     $.ajax({
         url: 'http://localhost:8080/api/v1/User/getUsers',
@@ -108,6 +107,8 @@ function fetchData() {
         fetchItems();
     } else if (currentSection === 'categories') {
         fetchCategories();
+    } else if (currentSection === 'qa') {
+        displayQuestions();
     }
 }
 
@@ -153,6 +154,75 @@ function fetchCategories() {
     });
 }
 
+function displayQuestions() {
+    fetch('http://localhost:8080/api/qa/all')
+        .then(response => response.json())
+        .then(questions => {
+            const questionList = document.getElementById('questionList');
+            questionList.innerHTML = '';
+            if (questions.length === 0) {
+                questionList.innerHTML = '<p>No questions found.</p>';
+            } else {
+                questions.forEach(q => {
+                    const questionDiv = document.createElement('div');
+                    questionDiv.className = 'question';
+                    questionDiv.innerHTML = `
+                        <p><strong>From:</strong> ${q.userEmail}</p>
+                        <p><strong>Question:</strong> ${q.question}</p>
+                        <div class="answer">
+                            <textarea id="answer-${q.id}">${q.answer || ''}</textarea>
+                            <button onclick="submitAnswer(${q.id})">Submit Answer</button>
+                            <button onclick="deleteQuestion(${q.id})">Delete</button>
+                        </div>
+                    `;
+                    questionList.appendChild(questionDiv);
+                });
+            }
+        })
+        .catch(error => console.error('Error fetching questions:', error));
+}
+
+function submitAnswer(questionId) {
+    const answerText = document.getElementById(`answer-${questionId}`).value;
+
+    fetch(`http://localhost:8080/api/qa/answer/${questionId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ answer: answerText })
+    })
+        .then(response => response.json())
+        .then(data => {
+            alert('Answer submitted successfully!');
+            displayQuestions();
+        })
+        .catch(error => {
+            console.error('Error submitting answer:', error);
+            alert('Failed to submit the answer.');
+        });
+}
+
+function deleteQuestion(questionId) {
+    if (confirm('Are you sure you want to delete this question?')) {
+        fetch(`http://localhost:8080/api/qa/delete/${questionId}`, {
+            method: 'DELETE'
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert('Question deleted successfully!');
+                    displayQuestions();
+                } else {
+                    alert('Failed to delete the question.');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting question:', error);
+                alert('Failed to delete the question.');
+            });
+    }
+}
+
 function populateTable(tableId, data, fields) {
     const table = $('#' + tableId);
     table.find("tr:gt(0)").remove(); // Clear existing rows except header
@@ -162,7 +232,11 @@ function populateTable(tableId, data, fields) {
         row.append(`<td><input type="checkbox" name="select" value="${item.id}"></td>`);
         fields.forEach(field => {
             if (field === 'role' && tableId === 'userTable') {
-                row.append(`<td class="role-${item[field].toLowerCase()}">${item[field]}</td>`);
+                let roleColor = '';
+                if (item[field] === 'ADMIN') roleColor = 'background-color: #ffcccc;'; // Light red for Admin
+                if (item[field] === 'CUSTOMER') roleColor = 'background-color: #ccffcc;'; // Light green for Customer
+                if (item[field] === 'STAFF') roleColor = 'background-color: #ccccff;'; // Light blue for Staff
+                row.append(`<td style="${roleColor}">${item[field]}</td>`);
             } else if (field === 'price' && tableId === 'itemTable') {
                 row.append(`<td>$${item[field].toFixed(2)}</td>`);
             } else if (field === 'imagePath' && tableId === 'itemTable') {
@@ -179,14 +253,13 @@ function populateTable(tableId, data, fields) {
 
         row.append(`
             <td>
-                <button class="action-btn" onclick="editItem('${currentSection.slice(0, -1)}', ${item.id}, '${email}')">Edit</button>
-                <button class="action-btn" onclick="deleteItem('${currentSection.slice(0, -1)}', ${item.id}, '${email}')">Delete</button>
+                <button class="action-btn" onclick="editItem('${tableId.replace('Table', '')}', ${item.id}, '${email}')">Edit</button>
+                <button class="action-btn" onclick="deleteItem('${tableId.replace('Table', '')}', ${item.id}, '${email}')">Delete</button>
             </td>
         `);
         table.append(row);
     });
 }
-
 
 function showAddModal(type) {
     currentAction = 'add';
@@ -199,40 +272,39 @@ function showAddModal(type) {
 
     if (type === 'user') {
         modalForm.html(`
-                    <input type="text" name="username" placeholder="Username" required>
-                    <input type="email" name="email" placeholder="Email" required>
-                    <input type="password" name="password" placeholder="Password" required>
-                    <input type="text" name="address" placeholder="Address" required>
-                    <select name="role" required>
-                        <option value="ADMIN">Admin</option>
-                        <option value="CUSTOMER">Customer</option>
-                        <option value="STAFF">Staff</option>
-                    </select>
-                `);
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <input type="text" name="address" placeholder="Address" required>
+            <select name="role" required>
+                <option value="ADMIN">Admin</option>
+                <option value="CUSTOMER">Customer</option>
+                <option value="STAFF">Staff</option>
+            </select>
+        `);
     } else if (type === 'item') {
         modalForm.html(`
-                    <input type="text" name="name" placeholder="Item Name" required>
-                    <textarea name="description" placeholder="Description" required></textarea>
-                    <select name="categoryId" required>
-                        <option value="">Select Category</option>
-                        <!-- Populate categories dynamically -->
-                    </select>
-                    <input type="number" name="price" placeholder="Price" step="0.01" required>
-                    <input type="number" name="quantity" placeholder="Quantity" required>
-                    <input type="file" name="image" accept="image/*" required>
-                `);
+            <input type="text" name="name" placeholder="Item Name" required>
+            <textarea name="description" placeholder="Description" required></textarea>
+            <select name="categoryId" required>
+                <option value="">Select Category</option>
+            </select>
+            <input type="number" name="price" placeholder="Price" step="0.01" required>
+            <input type="number" name="quantity" placeholder="Quantity" required>
+            <input type="file" name="image" accept="image/*" required>
+        `);
         populateCategoryDropdown();
     } else if (type === 'category') {
         modalForm.html(`
-                    <input type="text" name="name" placeholder="Category Name" required>
-                    <textarea name="description" placeholder="Description"></textarea>
-                `);
+            <input type="text" name="name" placeholder="Category Name" required>
+            <textarea name="description" placeholder="Description"></textarea>
+        `);
     }
 
     modal.show();
 }
 
-function editItem(type, id) {
+function editItem(type, id, email) {
     currentAction = 'edit';
     const modal = $('#modal');
     const modalTitle = $('#modalTitle');
@@ -240,7 +312,7 @@ function editItem(type, id) {
 
     modalTitle.text(`Edit ${type.charAt(0).toUpperCase() + type.slice(1)}`);
 
-    const url = type === 'user' ? `http://localhost:8080/api/v1/User/getUser/${id}` :
+    const url = type === 'user' ? `http://localhost:8080/api/v1/User/getUser/${email}` :
         type === 'item' ? `http://localhost:8080/api/v1/items/getItem/${id}` :
             `http://localhost:8080/api/v1/categories/getCatID/${id}`;
 
@@ -250,38 +322,37 @@ function editItem(type, id) {
         success: function (item) {
             if (type === 'user') {
                 modalForm.html(`
-                            <input type="hidden" name="id" value="${item.id}">
-                            <input type="text" name="username" value="${item.username}" required>
-                            <input type="email" name="email" value="${item.email}" required readonly>
-                            <input type="password" name="password" placeholder="Leave blank to keep current password">
-                            <input type="text" name="address" value="${item.address}" required>
-                            <select name="role" required>
-                                <option value="ADMIN" ${item.role === 'ADMIN' ? 'selected' : ''}>Admin</option>
-                                <option value="CUSTOMER" ${item.role === 'CUSTOMER' ? 'selected' : ''}>Customer</option>
-                                <option value="STAFF" ${item.role === 'STAFF' ? 'selected' : ''}>Staff</option>
-                            </select>
-                        `);
+                    <input type="hidden" name="id" value="${item.id}">
+                    <input type="text" name="username" value="${item.username}" required>
+                    <input type="email" name="email" value="${item.email}" required readonly>
+                    <input type="password" name="password" placeholder="Leave blank to keep current password">
+                    <input type="text" name="address" value="${item.address}" required>
+                    <select name="role" required>
+                        <option value="ADMIN" ${item.role === 'ADMIN' ? 'selected' : ''}>Admin</option>
+                        <option value="CUSTOMER" ${item.role === 'CUSTOMER' ? 'selected' : ''}>Customer</option>
+                        <option value="STAFF" ${item.role === 'STAFF' ? 'selected' : ''}>Staff</option>
+                    </select>
+                `);
             } else if (type === 'item') {
                 modalForm.html(`
-                            <input type="hidden" name<input type="hidden" name="id" value="${item.id}">
-                            <input type="text" name="name" value="${item.name}" required>
-                            <textarea name="description" required>${item.description}</textarea>
-                            <select name="categoryId" required>
-                                <option value="">Select Category</option>
-                                <!-- Populate categories dynamically -->
-                            </select>
-                            <input type="number" name="price" value="${item.price}" step="0.01" required>
-                            <input type="number" name="quantity" value="${item.quantity}" required>
-                            <input type="file" name="image" accept="image/*">
-                            <img src="${item.imagePath}" alt="Item Image" width="100">
-                        `);
+                    <input type="hidden" name="id" value="${item.id}">
+                    <input type="text" name="name" value="${item.name}" required>
+                    <textarea name="description" required>${item.description}</textarea>
+                    <select name="categoryId" required>
+                        <option value="">Select Category</option>
+                    </select>
+                    <input type="number" name="price" value="${item.price}" step="0.01" required>
+                    <input type="number" name="quantity" value="${item.quantity}" required>
+                    <input type="file" name="image" accept="image/*">
+                    <img src="${item.imagePath}" alt="Item Image" width="100">
+                `);
                 populateCategoryDropdown(item.category.id);
             } else if (type === 'category') {
                 modalForm.html(`
-                            <input type="hidden" name="id" value="${item.id}">
-                            <input type="text" name="name" value="${item.name}" required>
-                            <textarea name="description">${item.description}</textarea>
-                        `);
+                    <input type="hidden" name="id" value="${item.id}">
+                    <input type="text" name="name" value="${item.name}" required>
+                    <textarea name="description">${item.description}</textarea>
+                `);
             }
             modal.show();
         },
@@ -293,11 +364,6 @@ function editItem(type, id) {
 }
 
 function deleteItem(type, id, email) {
-    if (type === 'user' && !email) {
-        alert('Email is required to delete a user.');
-        return;
-    }
-
     if (confirm(`Are you sure you want to delete this ${type}?`)) {
         let url;
         if (type === 'user') {
@@ -311,9 +377,9 @@ function deleteItem(type, id, email) {
         $.ajax({
             url: url,
             method: 'DELETE',
-            success: function (data) {
-                console.log(`${type} deleted successfully:`, data);
-                fetchData();
+            success: function () {
+                alert(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully.`);
+                fetchData();  // Refresh the data after deletion
             },
             error: function (error) {
                 console.error(`Error deleting ${type}:`, error);
@@ -322,7 +388,6 @@ function deleteItem(type, id, email) {
         });
     }
 }
-
 
 function closeModal() {
     $('#modal').hide();
@@ -340,8 +405,9 @@ function submitForm() {
 
         const jsonData = {};
         formData.forEach((value, key) => {
-            // Directly assign the value, including the password, without any encryption
-            jsonData[key] = value;
+            if (key !== 'password' || value !== '') {
+                jsonData[key] = value;
+            }
         });
 
         $.ajax({
@@ -349,15 +415,14 @@ function submitForm() {
             method: method,
             contentType: 'application/json',
             data: JSON.stringify(jsonData),
-            success: function (data) {
-                console.log('Success:', data);
+            success: function () {
                 alert('User saved successfully.');
                 closeModal();
                 fetchData();
             },
             error: function (error) {
                 console.error('Error submitting form:', error);
-                alert(`Failed to save user. Please try again.`);
+                alert('Failed to save user. Please try again.');
             }
         });
     } else if (currentSection === 'items') {
@@ -370,15 +435,14 @@ function submitForm() {
             data: formData,
             processData: false,
             contentType: false,
-            success: function (data) {
-                console.log('Success:', data);
+            success: function () {
                 alert('Item saved successfully.');
                 closeModal();
                 fetchData();
             },
             error: function (error) {
                 console.error('Error submitting form:', error);
-                alert(`Failed to save item. Please try again.`);
+                alert('Failed to save item. Please try again.');
             }
         });
     } else if (currentSection === 'categories') {
@@ -395,20 +459,18 @@ function submitForm() {
             method: method,
             contentType: 'application/json',
             data: JSON.stringify(jsonData),
-            success: function (data) {
-                console.log('Success:', data);
+            success: function () {
                 alert('Category saved successfully.');
                 closeModal();
                 fetchData();
             },
             error: function (error) {
                 console.error('Error submitting form:', error);
-                alert(`Failed to save category. Please try again.`);
+                alert('Failed to save category. Please try again.');
             }
         });
     }
 }
-
 
 function searchItems(type) {
     const searchTerm = $(`#${type}SearchInput`).val().toLowerCase();
@@ -479,5 +541,17 @@ function logout() {
     });
     window.location.href = 'login.html';
 }
-$('#userName').text(userData.name);
-showSection('dashboard');
+
+// Initialize the dashboard
+$(document).ready(function() {
+    $('#userName').text(userData.name);
+    showSection('dashboard');
+
+    // Add event listeners for form submission and modal closing
+    $('#modalForm').on('submit', function(e) {
+        e.preventDefault();
+        submitForm();
+    });
+
+    $('.close').on('click', closeModal);
+});
