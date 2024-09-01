@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order History - ABC Restaurant</title>
+    <title>Order and Reservation History - ABC Restaurant</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="assets/css/order-history.css">
@@ -21,15 +21,21 @@
     </nav>
 
     <main class="container">
-        <h1>Your Order History</h1>
+        <h1>Your Order and Reservation History</h1>
 
         <div class="email-input">
             <input type="email" id="userEmail" placeholder="Enter your email" required>
             <input type="password" id="userPassword" placeholder="Enter your password" required>
-            <button id="fetchOrders">Fetch Orders</button>
+            <button id="fetchHistory">Fetch History</button>
         </div>
 
-        <div id="orderHistory"></div>
+        <div id="historyTabs">
+            <button class="tab-button active" data-tab="orders">Orders</button>
+            <button class="tab-button" data-tab="reservations">Reservations</button>
+        </div>
+
+        <div id="orderHistory" class="history-content active"></div>
+        <div id="reservationHistory" class="history-content"></div>
     </main>
 
     <footer>

@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    $('#fetchOrders').click(function() {
+    $('#fetchHistory').click(function() {
         const email = $('#userEmail').val().trim();
         const password = $('#userPassword').val().trim();
 
@@ -8,7 +8,18 @@ $(document).ready(function() {
             return;
         }
 
-        // Send request to backend to fetch orders
+        fetchOrders(email, password);
+        fetchReservations(email, password);
+    });
+
+    $('.tab-button').click(function() {
+        $('.tab-button').removeClass('active');
+        $(this).addClass('active');
+        $('.history-content').removeClass('active');
+        $(`#${$(this).data('tab')}History`).addClass('active');
+    });
+
+    function fetchOrders(email, password) {
         $.ajax({
             url: 'http://localhost:8080/api/v1/orders/user/' + email,
             method: 'GET',
@@ -23,7 +34,24 @@ $(document).ready(function() {
                 $('#orderHistory').html('<p>There was an error fetching your order history. Please check your credentials and try again.</p>');
             }
         });
-    });
+    }
+
+    function fetchReservations(email, password) {
+        $.ajax({
+            url: 'http://localhost:8080/reservations/user/' + email,
+            method: 'GET',
+            headers: {
+                'Authorization': 'Basic ' + btoa(email + ':' + password)
+            },
+            success: function(response) {
+                displayReservationHistory(response);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching reservations:', error);
+                $('#reservationHistory').html('<p>There was an error fetching your reservation history. Please check your credentials and try again.</p>');
+            }
+        });
+    }
 
     function displayOrderHistory(orders) {
         const orderHistory = $('#orderHistory');
@@ -49,6 +77,28 @@ $(document).ready(function() {
                 </div>
             `;
             orderHistory.append(orderHtml);
+        });
+    }
+
+    function displayReservationHistory(reservations) {
+        const reservationHistory = $('#reservationHistory');
+        reservationHistory.empty();
+
+        if (reservations.length === 0) {
+            reservationHistory.html('<p>No reservations found for this email.</p>');
+            return;
+        }
+
+        reservations.forEach(reservation => {
+            const reservationHtml = `
+                <div class="reservation">
+                    <h3>Reservation #${reservation.id} - ${new Date(reservation.date).toLocaleString()}</h3>
+                    <p><strong>Type:</strong> ${reservation.type}</p>
+                    <p><strong>Number of Guests:</strong> ${reservation.numberOfGuests}</p>
+                    <p><strong>Status:</strong> ${reservation.status}</p>
+                </div>
+            `;
+            reservationHistory.append(reservationHtml);
         });
     }
 });
