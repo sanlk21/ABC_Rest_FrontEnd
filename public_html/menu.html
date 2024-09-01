@@ -8,6 +8,32 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="assets/css/menu.css">
+    <style>
+        /* Add to Cart Popup Styles */
+        .popup {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 16px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideIn 0.5s, fadeOut 0.5s 2.5s;
+        }
+
+        @keyframes slideIn {
+            from {bottom: -100px; opacity: 0}
+            to {bottom: 20px; opacity: 1}
+        }
+
+        @keyframes fadeOut {
+            from {opacity: 1}
+            to {opacity: 0}
+        }
+    </style>
 </head>
 
 <body>
@@ -51,6 +77,9 @@
         <div id="loadingIndicator">Loading...</div>
         <div id="errorMessage" class="error-message"></div>
     </div>
+
+    <!-- Add to Cart Popup -->
+    <div id="addToCartPopup" class="popup"></div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
@@ -196,6 +225,17 @@
 
             updateCartTotal();
             updateCartDisplay();
+            showAddToCartPopup(item.name);
+        }
+
+        function showAddToCartPopup(itemName) {
+            const popup = document.getElementById('addToCartPopup');
+            popup.textContent = `${itemName} added to cart!`;
+            popup.style.display = 'block';
+
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 3000);
         }
 
         function removeFromCart(itemId) {

@@ -7,6 +7,41 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="assets/css/payment-styles.css">
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+            border-radius: 5px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -74,8 +109,9 @@
         <button id="confirmOrder" class="confirm-btn">Place Order</button>
 
         <!-- Confirmation Modal -->
-        <div id="orderConfirmation" class="modal hidden">
+        <div id="orderConfirmation" class="modal">
             <div class="modal-content">
+                <span class="close">&times;</span>
                 <h2>Order Confirmed!</h2>
                 <p>Thank you for your order. Your order details have been sent to your email.</p>
                 <button id="closeModal" class="confirm-btn">Close</button>
@@ -89,5 +125,30 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="assets/js/payment.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#confirmOrder').click(function() {
+                if (validateForm()) {
+                    $('#orderConfirmation').css('display', 'block');
+                }
+            });
+
+            $('.close, #closeModal').click(function() {
+                $('#orderConfirmation').css('display', 'none');
+            });
+
+            $(window).click(function(event) {
+                if (event.target == $('#orderConfirmation')[0]) {
+                    $('#orderConfirmation').css('display', 'none');
+                }
+            });
+
+            function validateForm() {
+                // Add your form validation logic here
+                // Return true if the form is valid, false otherwise
+                return true;
+            }
+        });
+    </script>
 </body>
 </html>
