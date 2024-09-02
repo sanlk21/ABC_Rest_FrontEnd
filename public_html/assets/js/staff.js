@@ -95,7 +95,7 @@ function updateOrderStatus(orderId, status) {
 
 // Fetch and display all reservations
 function fetchAllReservations() {
-    axios.get('http://localhost:8080/reservations')
+    axios.get('http://localhost:8080/api/v1/reservations')
         .then(response => {
             const reservations = response.data;
             const tableBody = document.getElementById('reservationsBody');
@@ -132,7 +132,7 @@ function fetchAllReservations() {
 
 // Show reservation details in modal
 function showReservationDetails(reservationId) {
-    axios.get(`http://localhost:8080/reservations/${reservationId}`)
+    axios.get(`http://localhost:8080/api/v1/reservations/${reservationId}`)
         .then(response => {
             const reservation = response.data;
             const detailsHtml = `
@@ -154,7 +154,7 @@ function showReservationDetails(reservationId) {
 
 // Update reservation status
 function updateReservationStatus(reservationId, status) {
-    axios.put(`http://localhost:8080/reservations/${reservationId}`, { status: status })
+    axios.put(`http://localhost:8080/api/v1/reservations/${reservationId}`, { status: status })
         .then(response => {
             alert(`Reservation #${reservationId} status updated to ${status}`);
             fetchAllReservations(); // Refresh the reservations list
@@ -169,7 +169,7 @@ function updateReservationStatus(reservationId, status) {
 // Delete reservation
 function deleteReservation(reservationId) {
     if (confirm(`Are you sure you want to delete reservation #${reservationId}?`)) {
-        axios.delete(`http://localhost:8080/reservations/${reservationId}`)
+        axios.delete(`http://localhost:8080/api/v1/reservations/${reservationId}`)
             .then(response => {
                 alert(`Reservation #${reservationId} deleted successfully`);
                 fetchAllReservations(); // Refresh the reservations list

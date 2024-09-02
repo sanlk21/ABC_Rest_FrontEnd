@@ -38,7 +38,7 @@ $(document).ready(function() {
 
     function fetchReservations(email, password) {
         $.ajax({
-            url: 'http://localhost:8080/reservations/user/' + email,
+            url: 'http://localhost:8080/api/v1/reservations/user/' + email,
             method: 'GET',
             headers: {
                 'Authorization': 'Basic ' + btoa(email + ':' + password)
