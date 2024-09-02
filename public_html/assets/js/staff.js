@@ -41,6 +41,7 @@ function fetchAllOrders() {
                         </button>
                         <button class="btn btn-success" onclick="updateOrderStatus(${order.id}, 'COMPLETED')">Deliver</button>
                         <button class="btn btn-danger" onclick="updateOrderStatus(${order.id}, 'CANCELLED')">Reject</button>
+                        <button class="btn btn-danger" onclick="deleteOrder(${order.id})">Delete</button> <!-- Add this line -->
                     </td>
                 `;
                 tableBody.appendChild(row);
@@ -50,6 +51,7 @@ function fetchAllOrders() {
             console.error('Error fetching orders:', error);
         });
 }
+
 
 // Show order details in modal
 function showOrderDetails(orderId) {
@@ -92,6 +94,21 @@ function updateOrderStatus(orderId, status) {
             alert('Failed to update order status. Please try again.');
         });
 }
+// Delete order
+function deleteOrder(orderId) {
+    if (confirm(`Are you sure you want to delete order #${orderId}?`)) {
+        axios.delete(`http://localhost:8080/api/v1/orders/${orderId}`)
+            .then(response => {
+                alert(`Order #${orderId} deleted successfully`);
+                fetchAllOrders(); // Refresh the orders list
+            })
+            .catch(error => {
+                console.error('Error deleting order:', error);
+                alert('Failed to delete order. Please try again.');
+            });
+    }
+}
+
 
 // Fetch and display all reservations
 function fetchAllReservations() {
