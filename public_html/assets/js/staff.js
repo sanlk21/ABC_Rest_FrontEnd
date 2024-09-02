@@ -41,7 +41,7 @@ function fetchAllOrders() {
                         </button>
                         <button class="btn btn-success" onclick="updateOrderStatus(${order.id}, 'COMPLETED')">Deliver</button>
                         <button class="btn btn-danger" onclick="updateOrderStatus(${order.id}, 'CANCELLED')">Reject</button>
-                        <button class="btn btn-danger" onclick="deleteOrder(${order.id})">Delete</button> <!-- Add this line -->
+                        <button class="btn btn-danger" onclick="deleteOrder(${order.id})">Delete</button>
                     </td>
                 `;
                 tableBody.appendChild(row);
@@ -51,7 +51,6 @@ function fetchAllOrders() {
             console.error('Error fetching orders:', error);
         });
 }
-
 
 // Show order details in modal
 function showOrderDetails(orderId) {
@@ -94,6 +93,7 @@ function updateOrderStatus(orderId, status) {
             alert('Failed to update order status. Please try again.');
         });
 }
+
 // Delete order
 function deleteOrder(orderId) {
     if (confirm(`Are you sure you want to delete order #${orderId}?`)) {
@@ -108,7 +108,6 @@ function deleteOrder(orderId) {
             });
     }
 }
-
 
 // Fetch and display all reservations
 function fetchAllReservations() {
@@ -135,7 +134,7 @@ function fetchAllReservations() {
                         <button class="btn btn-primary" onclick="showReservationDetails(${reservation.id})">
                             Details
                         </button>
-                        <button class="btn btn-success" onclick="updateReservationStatus(${reservation.id}, 'CONFIRMED')">Confirm</button>
+                        <button class="btn btn-success" onclick="confirmReservation(${reservation.id})">Confirm</button>
                         <button class="btn btn-danger" onclick="deleteReservation(${reservation.id})">Delete</button>
                     </td>
                 `;
@@ -181,6 +180,11 @@ function updateReservationStatus(reservationId, status) {
             console.error('Error updating reservation status:', error);
             alert('Failed to update reservation status. Please try again.');
         });
+}
+
+// Function to confirm reservation
+function confirmReservation(reservationId) {
+    updateReservationStatus(reservationId, 'CONFIRMED');
 }
 
 // Delete reservation
