@@ -108,6 +108,9 @@
 
         <button id="confirmOrder" class="confirm-btn">Place Order</button>
 
+        <!-- Message for Order Received -->
+        <p id="orderReceivedMessage" style="display: none; text-align: center; color: green; font-weight: bold; margin-top: 20px;">Your order has been received!</p>
+
         <!-- Confirmation Modal -->
         <div id="orderConfirmation" class="modal">
             <div class="modal-content">
@@ -129,25 +132,70 @@
         $(document).ready(function() {
             $('#confirmOrder').click(function() {
                 if (validateForm()) {
+                    // Show the order received message
+                    $('#orderReceivedMessage').css('display', 'block');
+
+                    // Show the confirmation modal
                     $('#orderConfirmation').css('display', 'block');
+
+                    // Redirect to home page after 3 seconds
+                    setTimeout(function() {
+                        window.location.href = 'index.html'; // Redirect to home page
+                    }, 3000);
                 }
             });
 
             $('.close, #closeModal').click(function() {
                 $('#orderConfirmation').css('display', 'none');
+                // Hide the order received message after the modal is closed
+                $('#orderReceivedMessage').css('display', 'none');
             });
 
             $(window).click(function(event) {
                 if (event.target == $('#orderConfirmation')[0]) {
                     $('#orderConfirmation').css('display', 'none');
+                    // Hide the order received message if the modal is closed by clicking outside
+                    $('#orderReceivedMessage').css('display', 'none');
                 }
             });
 
             function validateForm() {
-                // Add your form validation logic here
-                // Return true if the form is valid, false otherwise
-                return true;
+    var email = $('#UserEmail').val(); // Get the email value from the input field
+
+    // Check if the email field is empty
+    if (email === '') {
+        alert('Please enter your email.'); // Alert the user to enter their email
+        return false; // Return false to indicate form validation failed
+    }
+
+    var isValid = false; // Variable to hold the validity status of the email
+
+    // Perform an AJAX request to check if the email exists in the database
+    $.ajax({
+        url: 'http://127.0.0.1:8080/api/v1/User/getUsers', // Endpoint to get users
+        type: 'GET', // HTTP method
+        async: false, // Make synchronous AJAX request
+        success: function(users) {
+            // Check if the entered email exists in the list of users
+            var userExists = users.some(function(user) {
+                return user.email === email; // Check each user's email against the entered email
+            });
+            if (!userExists) {
+                alert('Please register first.'); // Alert the user to register if the email does not exist
+                isValid = false; // Set isValid to false indicating the email is not valid
+            } else {
+                isValid = true; // Set isValid to true indicating the email is valid
             }
+        },
+        error: function() {
+            alert('Error checking user existence.'); // Alert the user if there is an error during the AJAX request
+            isValid = false; // Set isValid to false due to the error
+        }
+    });
+
+    return isValid; // Return the validity status of the email
+}
+
         });
     </script>
 </body>
