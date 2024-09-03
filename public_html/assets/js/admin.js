@@ -117,7 +117,7 @@ function fetchUsers() {
         url: 'http://localhost:8080/api/v1/User/getUsers',
         method: 'GET',
         success: function (users) {
-            populateTable('userTable', users, ['id', 'username', 'email', 'address', 'role']);
+            populateTable('userTable', users, ['username', 'email', 'address', 'role']);
         },
         error: function (error) {
             console.error('Error fetching users:', error);
@@ -235,7 +235,7 @@ function populateTable(tableId, data, fields) {
                 let roleColor = '';
                 if (item[field] === 'ADMIN') roleColor = 'background-color: #ffcccc;'; // Light red for Admin
                 if (item[field] === 'CUSTOMER') roleColor = 'background-color: #ccffcc;'; // Light green for Customer
-                if (item[field] === 'STAFF') roleColor = 'background-color: #ccccff;'; // Light blue for Staff
+                if (item[field] === 'STAFF') roleColor = 'background-color: #fffd68;'; // Light blue for Staff
                 row.append(`<td style="${roleColor}">${item[field]}</td>`);
             } else if (field === 'price' && tableId === 'itemTable') {
                 row.append(`<td>$${item[field].toFixed(2)}</td>`);
@@ -322,7 +322,6 @@ function editItem(type, id, email) {
         success: function (item) {
             if (type === 'user') {
                 modalForm.html(`
-                    <input type="hidden" name="id" value="${item.id}">
                     <input type="text" name="username" value="${item.username}" required>
                     <input type="email" name="email" value="${item.email}" required readonly>
                     <input type="password" name="password" placeholder="Leave blank to keep current password">
@@ -382,8 +381,12 @@ function deleteItem(type, id, email) {
                 fetchData();  // Refresh the data after deletion
             },
             error: function (error) {
-                console.error(`Error deleting ${type}:`, error);
-                alert(`Failed to delete ${type}. Please try again.`);
+                if (error.responseJSON && error.responseJSON.message.includes('foreign key constraint')) {
+                    alert(`Cannot delete ${type} as it is referenced in other records.`);
+                } else {
+                    console.error(`Error deleting ${type}:`, error);
+                    alert(`Failed to delete ${type}. Please try again.`);
+                }
             }
         });
     }
@@ -426,7 +429,8 @@ function submitForm() {
             }
         });
     } else if (currentSection === 'items') {
-        url = currentAction === 'add' ? 'http://localhost:8080/api/v1/items/saveItem' : `http://localhost:8080/api/v1/items/updateItem/${formData.get('id')}`;
+        const id = formData.get('id');
+        url = currentAction === 'add' ? 'http://localhost:8080/api/v1/items/saveItem' : `http://localhost:8080/api/v1/items/updateItem/${id}`;
         method = currentAction === 'add' ? 'POST' : 'PUT';
 
         $.ajax({
@@ -487,7 +491,7 @@ function searchItems(type) {
                     : (item.name.toLowerCase().includes(searchTerm) || item.description.toLowerCase().includes(searchTerm)))
             );
             populateTable(`${type}Table`, filteredItems,
-                type === 'user' ? ['id', 'username', 'email', 'address', 'role'] :
+                type === 'user' ? ['username', 'email', 'address', 'role'] :
                     type === 'item' ? ['id', 'name', 'description', 'category.name', 'price', 'quantity', 'imagePath'] :
                         ['id', 'name', 'description']);
         },
