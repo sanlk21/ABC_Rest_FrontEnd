@@ -547,12 +547,12 @@ function logout() {
 }
 
 // Initialize the dashboard
-$(document).ready(function() {
+$(document).ready(function () {
     $('#userName').text(userData.name);
     showSection('dashboard');
 
     // Add event listeners for form submission and modal closing
-    $('#modalForm').on('submit', function(e) {
+    $('#modalForm').on('submit', function (e) {
         e.preventDefault();
         submitForm();
     });
