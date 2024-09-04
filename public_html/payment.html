@@ -95,6 +95,7 @@
         <div class="customer-info">
             <h2>Customer Information</h2>
             <input type="email" id="UserEmail" placeholder="Email" required>
+            <input type="password" id="UserPassword" placeholder="Password" required>
         </div>
 
         <div class="order-type">
@@ -147,55 +148,44 @@
 
             $('.close, #closeModal').click(function() {
                 $('#orderConfirmation').css('display', 'none');
-                // Hide the order received message after the modal is closed
                 $('#orderReceivedMessage').css('display', 'none');
             });
 
             $(window).click(function(event) {
                 if (event.target == $('#orderConfirmation')[0]) {
                     $('#orderConfirmation').css('display', 'none');
-                    // Hide the order received message if the modal is closed by clicking outside
                     $('#orderReceivedMessage').css('display', 'none');
                 }
             });
 
             function validateForm() {
-    var email = $('#UserEmail').val(); // Get the email value from the input field
+                var email = $('#UserEmail').val();
+                var password = $('#UserPassword').val();
 
-    // Check if the email field is empty
-    if (email === '') {
-        alert('Please enter your email.'); // Alert the user to enter their email
-        return false; // Return false to indicate form validation failed
-    }
+                if (email === '' || password === '') {
+                    alert('Please enter both email and password.');
+                    return false;
+                }
 
-    var isValid = false; // Variable to hold the validity status of the email
+                var isValid = false;
 
-    // Perform an AJAX request to check if the email exists in the database
-    $.ajax({
-        url: 'http://127.0.0.1:8080/api/v1/User/getUsers', // Endpoint to get users
-        type: 'GET', // HTTP method
-        async: false, // Make synchronous AJAX request
-        success: function(users) {
-            // Check if the entered email exists in the list of users
-            var userExists = users.some(function(user) {
-                return user.email === email; // Check each user's email against the entered email
-            });
-            if (!userExists) {
-                alert('Please register first.'); // Alert the user to register if the email does not exist
-                isValid = false; // Set isValid to false indicating the email is not valid
-            } else {
-                isValid = true; // Set isValid to true indicating the email is valid
+                $.ajax({
+                    url: 'http://127.0.0.1:8080/api/v1/User/login',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ email: email, password: password }),
+                    async: false,
+                    success: function(data) {
+                        isValid = true;
+                    },
+                    error: function() {
+                        alert('Invalid email or password.');
+                        isValid = false;
+                    }
+                });
+
+                return isValid;
             }
-        },
-        error: function() {
-            alert('Error checking user existence.'); // Alert the user if there is an error during the AJAX request
-            isValid = false; // Set isValid to false due to the error
-        }
-    });
-
-    return isValid; // Return the validity status of the email
-}
-
         });
     </script>
 </body>
