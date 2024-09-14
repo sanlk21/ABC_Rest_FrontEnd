@@ -428,18 +428,17 @@ function submitForm() {
                 alert('Failed to save user. Please try again.');
             }
         });
-    }   else if (currentSection === 'items') {
-        const id = formData.get('id');  // Get the item ID if editing
+    } else if (currentSection === 'items') {
+        const id = formData.get('id');
         url = currentAction === 'add' ? 'http://localhost:8080/api/v1/items/saveItem' : `http://localhost:8080/api/v1/items/updateItem/${id}`;
         method = currentAction === 'add' ? 'POST' : 'PUT';
 
-        // Send FormData with the image and text fields
         $.ajax({
             url: url,
             method: method,
             data: formData,
-            processData: false,  // Required for FormData
-            contentType: false,  // Required for FormData
+            processData: false,
+            contentType: false,
             success: function () {
                 alert('Item saved successfully.');
                 closeModal();
